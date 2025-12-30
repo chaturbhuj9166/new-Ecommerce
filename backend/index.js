@@ -18,7 +18,8 @@ await connectToDB();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://new-ecommerce-t48z.onrender.com",
+
     credentials: true,
   })
 );
