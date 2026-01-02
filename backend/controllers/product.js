@@ -19,17 +19,22 @@ import multer from "multer";
 export async function addProduct(req, res) {
   try {
     const newRecord = req.body;
-    if (req.file) {
-      // Save path relative to /uploads for frontend
-      newRecord.image = `uploads/${req.file.filename}`;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "Image is required" });
     }
+
+    newRecord.image = `uploads/${req.file.filename}`;
+
     const newProduct = new Product(newRecord);
     await newProduct.save();
-    return res.status(201).json(newProduct);
+
+    res.status(201).json(newProduct);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 }
+
 
 
 

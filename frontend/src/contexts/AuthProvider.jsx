@@ -1,48 +1,79 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import instance from "../axiosConfig.js";
 
-const authContext = createContext();
+const AuthContext = createContext();
 
 function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedinUser, setLoggedinUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // 🔄 On page refresh
   useEffect(() => {
     checkIsLoggedIn();
   }, []);
 
+  // ✅ CHECK LOGIN (USER)
   async function checkIsLoggedIn() {
-    const response = await instance.get("/check/login?referer=user", {
-      withCredentials: true,
-    });
-    if (response.status === 200) setIsLoggedIn(true);
+    try {
+      const response = await instance.get(
+        "/check/login?referer=user",
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        setIsLoggedIn(true);
+        setLoggedinUser(response.data);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        // Normal case: not logged in
+        setIsLoggedIn(false);
+        setLoggedinUser(null);
+      } else {
+        console.error("Auth check failed:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function handleLogout() {
-    const response = await instance.post(
-      "/user/logout",
-      {},
-      {
-        withCredentials: true
-        ,
+  // ✅ LOGOUT (React friendly)
+  async function handleLogout(navigate) {
+    try {
+      const response = await instance.post(
+        "/user/logout",
+        {},
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        setIsLoggedIn(false);
+        setLoggedinUser(null);
+        navigate("/"); // ✅ React way
       }
-    );
-    if (response.status === 200) {
-      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   }
 
   return (
-    <authContext.Provider
-      value={{ isLoggedIn, loggedinUser, checkIsLoggedIn, handleLogout }}
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        loggedinUser,
+        loading,
+        checkIsLoggedIn,
+        handleLogout,
+      }}
     >
-      {children}
-    </authContext.Provider>
+      {!loading && children}
+    </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  return useContext(authContext);
+  return useContext(AuthContext);
 }
 
 export default AuthProvider;

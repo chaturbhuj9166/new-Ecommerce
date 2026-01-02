@@ -16,61 +16,86 @@ export async function getUsers(req, res) {
 // ================== REGISTER ==================
 export async function registerUser(req, res) {
   try {
-    const data = req.body;
+    const { name, email, username, password, phone, role } = req.body;
 
-    const existEmail = await Auth.findOne({ email: data.email });
-    if (existEmail) return res.status(400).json({ message: "Email already exists" });
+    if (!email || !password || !username) {
+      return res.status(400).json({ message: "Required fields missing" });
+    }
 
-    const existUser = await Auth.findOne({ username: data.username });
-    if (existUser) return res.status(400).json({ message: "Username already exists" });
+    const existEmail = await Auth.findOne({ email });
+    if (existEmail)
+      return res.status(400).json({ message: "Email already exists" });
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    data.password = hashedPassword;
+    const existUser = await Auth.findOne({ username });
+    if (existUser)
+      return res.status(400).json({ message: "Username already exists" });
 
-    const newUser = new Auth(data);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new Auth({
+      name,
+      email,
+      username,
+      phone,
+      password: hashedPassword,
+      role: role || "user", // ✅ default role
+    });
+
     await newUser.save();
-    return res.status(201).json({ message: "User registered successfully", user: newUser });
+
+    return res.status(201).json({
+      message: "User registered successfully",
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
+
 // ================== LOGIN ==================
 export async function loginUsers(req, res) {
   try {
-    const data = req.body;
+    const { email, password } = req.body;
 
-    const user = await Auth.findOne({ email: data.email });
-    if (!user) return res.status(400).json({ message: "Email not found" });
+    const user = await Auth.findOne({ email });
+    if (!user)
+      return res.status(400).json({ message: "Email not found" });
 
-    const match = await bcrypt.compare(data.password, user.password);
-    if (!match) return res.status(400).json({ message: "Incorrect password" });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(400).json({ message: "Incorrect password" });
 
-    // Generate JWT token
     const auth_token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // Set cookie
     res.cookie("auth_token", auth_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Only true in production
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // None for cross-site in production, Lax for dev
-      maxAge: 3600 * 1000, // 1 hour
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 3600*1000, // 1 hour  
     });
 
-    return res.status(200).json({ message: "Login success", user });
+    return res.status(200).json({
+      message: "Login success",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
+
 // ================== LOGOUT ==================
 export async function logoutUsers(req, res) {
   try {
-    // Clear cookie on logout
     res.clearCookie("auth_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -82,6 +107,7 @@ export async function logoutUsers(req, res) {
     return res.status(500).json({ message: error.message });
   }
 }
+
 
 // ================== DELETE USER ==================
 export async function deleteUsers(req, res) {

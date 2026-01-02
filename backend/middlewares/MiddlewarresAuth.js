@@ -17,7 +17,8 @@ export async function checkForlogin(req, res, next, customArg) {
 
     // Verify token using correct env variable
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    console.log(decoded);
+    
     // Check role
     if (decoded.role !== referer)
       return res.status(403).json({ message: "Forbidden: Invalid role" });

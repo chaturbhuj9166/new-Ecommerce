@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import "react-toastify/dist/ReactToastify.css";
 
 function Register() {
   const [data, setData] = useState({
@@ -11,21 +12,22 @@ function Register() {
     username: "",
     email: "",
     password: "",
-    role:"user",
+    role: "user",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setData({ ...data, [name]: value });
+    setData((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_BASEURL}/user/register`,
         data
       );
@@ -38,46 +40,105 @@ function Register() {
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-
     } catch (error) {
-      toast.error(error.response?.data?.message || "Registration Failed!", {
-        position: "top-center",
-      });
+      toast.error(
+        error.response?.data?.message || "Registration Failed!",
+        { position: "top-center" }
+      );
     }
   }
 
   return (
-    <div className="register-box">
-      <h2>Register To Our E-commerce</h2>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-8">
+        <h2 className="text-2xl font-bold text-center mb-6">
+          Register to Our E-commerce
+        </h2>
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Name</label>
-          <input type="text" name="name" value={data.name} onChange={handleChange} required />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-        <div className="form-group">
-          <label>Phone</label>
-          <input type="text" name="phone" value={data.phone} onChange={handleChange} required />
-        </div>
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={data.name}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+          />
 
-        <div className="form-group">
-          <label>Username</label>
-          <input type="text" name="username" value={data.username} onChange={handleChange} required />
-        </div>
+          <input
+            type="text"
+            name="phone"
+            placeholder="Phone Number"
+            value={data.phone}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+          />
 
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" name="email" value={data.email} onChange={handleChange} required />
-        </div>
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={data.username}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+          />
 
-        <div className="form-group">
-          <label>Password</label>
-          <input type="password" name="password" value={data.password} onChange={handleChange} required />
-        </div>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={data.email}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+          />
 
-        <button type="submit">Register</button>
-      </form>
+          {/* 🔐 PASSWORD WITH SHOW / HIDE */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={data.password}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-md px-4 py-2 pr-10 focus:ring-2 focus:ring-black outline-none"
+            />
+
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500"
+            >
+              {showPassword ? (
+                <AiOutlineEyeInvisible size={20} />
+              ) : (
+                <AiOutlineEye size={20} />
+              )}
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition font-semibold"
+          >
+            Register
+          </button>
+        </form>
+
+        <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            className="text-blue-600 hover:underline cursor-pointer font-medium"
+          >
+            Login
+          </span>
+        </p>
+      </div>
 
       <ToastContainer />
     </div>

@@ -3,8 +3,13 @@ import { checkForlogin } from "../middlewares/MiddlewarresAuth.js";
 
 const checkRouter = Router();
 
-checkRouter.get("/login", (req, res, next) =>
-  checkForlogin(req, res, null, "user")
-);
+// ✅ middleware ko PROPER express way me use karo
+checkRouter.get("/login", checkForlogin, (req, res) => {
+  res.status(200).json({
+    message: "Logged in",
+    userId: req.userId,
+    role: req.userRole,
+  });
+});
 
 export default checkRouter;

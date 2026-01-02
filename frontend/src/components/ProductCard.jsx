@@ -1,50 +1,64 @@
 import { PiCurrencyInrLight } from "react-icons/pi";
 import { Link } from "react-router-dom";
 
-const trimContent = (text, maxLength = 30) => {
-  if (!text) return "";
+const trimContent = (text = "", maxLength = 30) => {
   return text.length > maxLength
-    ? text.substring(0, maxLength) + "..."
+    ? text.slice(0, maxLength) + "..."
     : text;
 };
 
 function ProductCard({ product }) {
+  if (!product) return null;
+
   return (
-    <div className="productCard">
+    <div className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-100">
       
-     
-      <div className="productImage">
-        <Link to={"/product/" + product.slug}>
+      {/* 🖼️ Product Image */}
+      <div className="w-full h-56 overflow-hidden bg-slate-50">
+        <Link to={`/product/${product.slug}`}>
           <img
-            src={`${import.meta.env.VITE_BASEURL}/${product.image}`}
+            src={`http://localhost:3000/${product.image}`}
             alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
           />
         </Link>
       </div>
 
-      <div className="content">
-        
+      {/* 📦 Content */}
+      <div className="p-4 space-y-1">
+
         {/* Product Name */}
-        <h3>
-           <Link to={"/product/" + product.slug}>
+        <h3 className="text-sm font-semibold text-slate-800 leading-tight">
+          <Link
+            to={`/product/${product.slug}`}
+            className="hover:text-indigo-600 transition"
+          >
             {trimContent(product.name, 22)}
           </Link>
         </h3>
 
         {/* Price */}
-        <p>
-          <PiCurrencyInrLight />
-          {product.discountedPrice ? (
+        <div className="flex items-center gap-1 text-sm">
+          <PiCurrencyInrLight className="text-slate-500" />
+
+          {product.discountedPrice &&
+          product.discountedPrice < product.originalPrice ? (
             <>
-              <del>{product.originalPrice}</del>
-              <strong>{product.discountedPrice}</strong>
+              <del className="text-slate-400 text-xs">
+                {product.originalPrice}
+              </del>
+              <span className="text-emerald-600 font-bold text-sm">
+                {product.discountedPrice}
+              </span>
             </>
           ) : (
-            <strong>{product.originalPrice}</strong>
+            <span className="font-bold text-slate-800">
+              {product.originalPrice}
+            </span>
           )}
-        </p>
+        </div>
 
-        
       </div>
     </div>
   );

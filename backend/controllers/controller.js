@@ -1,4 +1,4 @@
-import data from "../data.js";
+
 
 export async function getData(req, res) { res.status(200).json(data); }
 export async function addData(req, res) {

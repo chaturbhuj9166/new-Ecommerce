@@ -7,6 +7,7 @@ import authRouter from "./routes/Auth.js";
 import adminRouter from "./routes/Admin.js";
 import cartRouter from "./routes/Cart.js";
 import checkRouter from "./routes/Check.js";
+import couponRouter from "./routes/Coupon.js";
 
 
 import cors from "cors";
@@ -23,7 +24,7 @@ app.use("/uploads", express.static("uploads"));
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -33,5 +34,7 @@ app.use("/user", authRouter);
 app.use("/admin", adminRouter);
 app.use("/check", checkRouter);
 app.use("/cart", cartRouter);
+app.use("/coupon", couponRouter);
+
 
 app.listen(3000, () => console.log("Server started at port 3000"));
