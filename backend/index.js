@@ -63,9 +63,9 @@ import connectToDB from "./db/connect.js";
 import productRouter from "./routes/productRouter.js";
 import authRouter from "./routes/Auth.js";
 import adminRouter from "./routes/Admin.js";
-import cartRouter from "./routes/cart.js";
-import checkRouter from "./routes/check.js";
-import couponRouter from "./routes/coupon.js";
+import cartRouter from "./routes/Cart.js";
+import checkRouter from "./routes/Check.js";
+import couponRouter from "./routes/Coupon.js";
 
 const app = express();
 
