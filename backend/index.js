@@ -61,7 +61,7 @@ import "dotenv/config";
 import connectToDB from "./db/connect.js";
 
 import productRouter from "./routes/productRouter.js";
-import authRouter from "./routes/auth.js";
+import authRouter from "./routes/Auth.js";
 import adminRouter from "./routes/admin.js";
 import cartRouter from "./routes/cart.js";
 import checkRouter from "./routes/check.js";
