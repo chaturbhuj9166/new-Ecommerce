@@ -10,11 +10,13 @@
   "author": "prem",
   "license": "ISC",
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "google-auth-library": "^10.5.0",
     "js": "^0.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.0.0",

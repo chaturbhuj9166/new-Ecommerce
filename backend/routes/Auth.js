@@ -7,6 +7,7 @@ import {
   registerUser,
   updateUsers,
 } from "../controllers/AuthController.js";
+import { googleLogin } from "../controllers/googleLogin.js";
 
 const authRouter = Router();
 
@@ -17,5 +18,6 @@ authRouter.post("/login", loginUsers);
 authRouter.post("/logout", logoutUsers);
 authRouter.delete("/:id", deleteUsers);
 authRouter.put("/:id", updateUsers);
+authRouter.post("/google-login", googleLogin);
 
 export default authRouter;

@@ -1,65 +1,74 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import First from "./pages/First.jsx";
+
+import AuthProvider from "./contexts/AuthProvider.jsx";
+import { CartProvider } from "./contexts/CartProvider.jsx";
+
+// Layouts
+import UserLayout from "./layouts/UserLayout.jsx";
+import AdminLayout from "./layouts/AdminLayout.jsx";
+
+// USER PAGES
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
-import Register from "./pages/Register";
-import AuthProvider from "./contexts/AuthProvider.jsx";
-import AdminHome from "./admin/pages/Home.jsx";
-import AdminLogin from "./admin/pages/Login.jsx";
-import AddProduct from "./admin/pages/AddProduct.jsx";
-import ProtectedRouters from "./admin/components/ProtectedRouters.jsx";
-import SingleProduct from "./pages/SingleProduct.jsx";
+import Register from "./pages/Register.jsx";
 import Cart from "./pages/Cart.jsx";
-import {CartProvider} from "./contexts/CartProvider.jsx";
-import CreateCoupon from "./admin/pages/AddCoupon.jsx";
+import Wishlist from "./pages/Wishlist.jsx";
+import SingleProduct from "./pages/SingleProduct.jsx";
+
+// ADMIN PAGES
+import AdminLogin from "./admin/pages/Login.jsx";
 import Dashboard from "./admin/pages/Dashboard.jsx";
 import Manage from "./admin/pages/Manage.jsx";
-import Wishlist from "./pages/Wishlist.jsx";
+import AddProduct from "./admin/pages/AddProduct.jsx";
 import AddCoupon from "./admin/pages/AddCoupon.jsx";
+import AllCoupons from "./admin/pages/AllCoupon.jsx";
+import EditCoupon from "./admin/pages/EditCoupon.jsx";
+import EditProduct from "./admin/pages/EditProduct.jsx";
+import Management from "./admin/pages/Management.jsx";
+
+import ProtectedRouters from "./admin/components/ProtectedRouters.jsx";
 
 const router = createBrowserRouter([
+  /* ================= USER ROUTES ================= */
   {
     path: "/",
-    element: (
-  
-        <First />
-    
-    ),
+    element: <UserLayout />,
     children: [
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
       { path: "cart", element: <Cart /> },
       { path: "wishlist", element: <Wishlist /> },
-      { path: "register", element: <Register /> },
       { path: "product/:slug", element: <SingleProduct /> },
+    ],
+  },
 
-      { path: "admin/login", element: <AdminLogin /> },
-      { path: "admin/home", element: <AdminHome /> },
+  /* ================= ADMIN ROUTES ================= */
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      // ✅ Admin Login (no protection)
+      { path: "login", element: <AdminLogin /> },
 
+      // 🔐 Protected Admin Pages
       {
-        path: "admin/AddProduct",
-        element: <AddProduct />,
-      },
-      {
-        path: "admin/Manage",
-        element: <Manage />,
-      },
-      {
-        path: "admin/AddCoupon",
-        element: <AddCoupon/>,
-      },
-      {
-        path: "admin/Dashboard",
-        element: <Dashboard />,
-      },
-      
-      {
-        path: "admin/product/add",
-        element: (
-          <ProtectedRouters>
-            <AddProduct />
-          </ProtectedRouters>
-        ),
+        element: <ProtectedRouters />,
+        children: [
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "manage", element: <Manage /> },
+          { path: "product/add", element: <AddProduct /> },
+
+          { path: "coupons", element: <AllCoupons /> },
+          { path: "coupons/add", element: <AddCoupon /> },
+          { path: "coupons/edit/:id", element: <EditCoupon /> },
+
+        { path: "edit-product/:id", element: <EditProduct /> },
+        { path: "management", element: <Management /> }
+
+
+
+        ],
       },
     ],
   },
@@ -71,7 +80,6 @@ function App() {
       <CartProvider>
         <RouterProvider router={router} />
       </CartProvider>
-      
     </AuthProvider>
   );
 }

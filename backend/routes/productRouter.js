@@ -1,68 +1,42 @@
-// import Router from "express";
-// import { addProduct, deleteProduct, getProduct, updateProduct, checkSlug,getProductBySlug} from "../controllers/product.js"
-
-// import multer from "multer";
-// import path from "path";
-
-// const storage = multer.diskStorage({
-//     destination: function (req, fill, cb) {
-//         cb(null, "uploads")
-//     },
-//     filename: function (req, file, cb) {
-//         const filename = req.body.slug + path.extname(file.originalname)
-//         cb(null, filename)
-//     }
-// })
-
-// const uploads = multer({ storage: storage })
-
-// const productRouter = Router()
-
-// productRouter.get("/", getProduct)
-// productRouter.post("/", uploads.single("image"), addProduct)
-// productRouter.put("/:id", updateProduct)
-// productRouter.delete("/:id", deleteProduct)
-// productRouter.get('/checkSlug/:slug', checkSlug)
-// productRouter.get("/slug/:slug", getProductBySlug);
-
-// export default productRouter
-
-
-
-
-
-
 import { Router } from "express";
-import {
-  addProduct,
-  deleteProduct,
-  getProduct,
-  updateProduct,
-  checkSlug,
-  getProductBySlug
-} from "../controllers/product.js";
-
 import multer from "multer";
 import path from "path";
+import {
+  addProduct,
+  getProduct,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  checkSlug,
+  getProductBySlug,
+} from "../controllers/product.js";
 
+const router = Router();
+
+/* ===== MULTER CONFIG ===== */
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, req.body.slug + path.extname(file.originalname));
-  }
+  destination: (req, file, cb) => cb(null, "uploads"),
+  filename: (req, file, cb) =>
+    cb(
+      null,
+      Date.now() +
+        "-" +
+        Math.round(Math.random() * 1e9) +
+        path.extname(file.originalname)
+    ),
 });
 
 const upload = multer({ storage });
 
-const productRouter = Router();
+/* ===== ROUTES ===== */
+router.get("/", getProduct);
+router.get("/slug/:slug", getProductBySlug);
+router.get("/:id", getProductById);
 
-productRouter.get("/", getProduct);
-productRouter.post("/", upload.single("image"), addProduct);
-productRouter.put("/:id", updateProduct);
-productRouter.delete("/:id", deleteProduct);
-productRouter.get("/checkSlug/:slug", checkSlug);
-productRouter.get("/slug/:slug", getProductBySlug);
+router.post("/", upload.array("images", 5), addProduct);
+router.put("/:id", upload.array("images", 5), updateProduct);
+router.delete("/:id", deleteProduct);
 
-export default productRouter;
+router.get("/checkSlug/:slug", checkSlug);
+
+export default router;

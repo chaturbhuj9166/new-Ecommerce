@@ -3,132 +3,157 @@ import instance from "../axiosConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import { PiCurrencyInrLight } from "react-icons/pi";
 import { useAuth } from "../contexts/AuthProvider";
-
+import { toast } from "react-toastify";
 
 const SingleProduct = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  
-
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const { isLoggedIn } = useAuth();
 
-  async function getSingleData() {
-    try {
-      const response = await instance.get(`/product/slug/${slug}`);
-      setProduct(response.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [product, setProduct] = useState(null);
+  const [mainImage, setMainImage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [cartLoading, setCartLoading] = useState(false); // 🔥 ADD TO CART LOADER
 
   useEffect(() => {
-    getSingleData();
+    fetchProduct();
   }, [slug]);
 
-  async function handleAddToCart(productId) {
-  if (!isLoggedIn) {
-    navigate(`/login?nextPage=/product/${slug}`);
-    return;
-  }
+  async function fetchProduct() {
+    setLoading(true);
+    try {
+      const res = await instance.get(`/product/slug/${slug}`);
 
-  try {
-    const response = await instance.post(
-      "/cart/add",
-      { productId, quantity: 1 },
-      { withCredentials: true }
-    );
-
-    if (response.status === 200 || response.status === 201) {
-      alert("Product added successfully!");
-
-      // ✅ Redirect to cart page
-      navigate("/cart");
+      setTimeout(() => {
+        setProduct(res.data);
+        setMainImage(res.data.images[0]);
+        setLoading(false);
+      }, 1000);
+    } catch (err) {
+      setLoading(false);
+      toast.error("Product not found");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Failed to add product!");
   }
-}
 
+  async function handleAddToCart(productId) {
+    if (!isLoggedIn) {
+      toast.info("Please login first");
+      navigate(`/login?nextPage=/product/${slug}`);
+      return;
+    }
 
-  // 🔹 Loading state
-  if (loading)
+    try {
+      setCartLoading(true); // 🔥 start button loader
+
+      await instance.post(
+        "/cart/add",
+        { productId, quantity: 1 },
+        { withCredentials: true }
+      );
+
+      toast.success("Added to cart 🛒");
+
+      setTimeout(() => {
+        setCartLoading(false);
+        navigate("/cart");
+      }, 1000); // ⏳ 1 sec loader
+    } catch {
+      setCartLoading(false);
+      toast.error("Failed to add product");
+    }
+  }
+
+  // PAGE LOADER
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg font-semibold">Loading...</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 font-semibold">Loading product...</p>
       </div>
     );
+  }
 
-  // 🔹 Not found
-  if (!product)
+  if (!product) {
     return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-red-500 text-lg">Product not found</p>
+      <div className="flex justify-center items-center h-[60vh] text-red-500">
+        Product not found
       </div>
     );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-        {/* Image */}
-        <div className="w-full h-[400px] rounded-lg overflow-hidden shadow">
-          <img
-            src={`${import.meta.env.VITE_BASEURL}/${product.image}`}
-            alt={product.name}
-            className="w-full h-full object-canver"
-          />
+        {/* IMAGE SECTION */}
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-3">
+            {product.images.map((img, i) => (
+              <img
+                key={i}
+                src={`${import.meta.env.VITE_BASEURL}/${img}`}
+                onClick={() => setMainImage(img)}
+                className={`w-16 h-16 object-cover rounded-lg cursor-pointer border
+                  ${
+                    mainImage === img
+                      ? "border-indigo-600 ring-2 ring-indigo-400"
+                      : "border-gray-300 hover:border-indigo-400"
+                  }`}
+              />
+            ))}
+          </div>
+
+          <div className="flex-1 h-[420px] rounded-xl overflow-hidden shadow-lg bg-gray-100">
+            <img
+              src={`${import.meta.env.VITE_BASEURL}/${mainImage}`}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
 
-        {/* Details */}
+        {/* DETAILS */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
             {product.name}
           </h1>
 
-          <p className="text-sm text-gray-500 mb-4">
-            {product.category}
-          </p>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-2xl font-bold text-green-600 flex items-center gap-1">
+              <PiCurrencyInrLight />
+              {product.discountedPrice}
+            </span>
+            <del className="text-lg text-gray-400">
+              ₹{product.originalPrice}
+            </del>
+          </div>
 
-          {/* Price */}
-          <p className="flex items-center gap-2 text-xl mb-4">
-            <PiCurrencyInrLight />
-            {product.discountedPrice &&
-            product.discountedPrice < product.originalPrice ? (
-              <>
-                <del className="text-gray-400">
-                  {product.originalPrice}
-                </del>
-                <span className="text-green-600 font-bold">
-                  {product.discountedPrice}
-                </span>
-              </>
-            ) : (
-              <span className="font-bold">
-                {product.originalPrice}
-              </span>
-            )}
-          </p>
-
-          {/* Description */}
-          <p className="text-gray-700 mb-6 leading-relaxed">
+          <p className="text-gray-700 mb-8">
             {product.description}
           </p>
 
-          {/* Button */}
+          {/* 🔥 ADD TO CART BUTTON WITH LOADER */}
           <button
             onClick={() => handleAddToCart(product._id)}
-            className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition"
+            disabled={cartLoading}
+            className={`px-8 py-3 rounded-lg font-semibold text-white
+              flex items-center justify-center gap-2
+              ${
+                cartLoading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-black hover:bg-gray-800"
+              }`}
           >
-            Add to Cart
+            {cartLoading ? (
+              <>
+                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Adding...
+              </>
+            ) : (
+              "Add to Cart"
+            )}
           </button>
         </div>
-
       </div>
     </div>
   );

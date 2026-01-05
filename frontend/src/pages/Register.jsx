@@ -19,12 +19,24 @@ function Register() {
   const navigate = useNavigate();
 
   function handleChange(e) {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // 🔥 PHONE NUMBER: ONLY 10 DIGITS
+    if (name === "phone") {
+      value = value.replace(/\D/g, ""); // only numbers
+      if (value.length > 10) return;    // stop after 10
+    }
+
     setData((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (data.phone.length !== 10) {
+      toast.error("📱 Phone number must be 10 digits");
+      return;
+    }
 
     try {
       await axios.post(
@@ -33,7 +45,6 @@ function Register() {
       );
 
       toast.success("🎉 User Registered Successfully!", {
-        position: "top-center",
         autoClose: 2000,
       });
 
@@ -42,8 +53,7 @@ function Register() {
       }, 2000);
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Registration Failed!",
-        { position: "top-center" }
+        error.response?.data?.message || "Registration Failed!"
       );
     }
   }
@@ -67,6 +77,7 @@ function Register() {
             className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
           />
 
+          {/* 📱 PHONE NUMBER */}
           <input
             type="text"
             name="phone"
@@ -74,6 +85,9 @@ function Register() {
             value={data.phone}
             onChange={handleChange}
             required
+            inputMode="numeric"
+            pattern="[0-9]{10}"
+            maxLength={10}
             className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
           />
 
@@ -97,7 +111,7 @@ function Register() {
             className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
           />
 
-          {/* 🔐 PASSWORD WITH SHOW / HIDE */}
+          {/* 🔐 PASSWORD */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}

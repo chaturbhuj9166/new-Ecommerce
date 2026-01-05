@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthProvider";
 import { useCart } from "../contexts/CartProvider";
 import { PiCurrencyInrLight } from "react-icons/pi";
 import { AiOutlineDelete } from "react-icons/ai";
+import { toast } from "react-toastify";
 
 const Cart = () => {
   const { isLoggedIn } = useAuth();
@@ -11,13 +12,12 @@ const Cart = () => {
 
   const [loading, setLoading] = useState(true);
 
-// 🔹 Coupon states
+  // Coupon states
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(0);
   const [couponError, setCouponError] = useState("");
 
-  // 🔹 Fetch Cart
+  /* ================= FETCH CART ================= */
   const fetchCart = async () => {
     if (!isLoggedIn) {
       setCartItems([]);
@@ -44,6 +44,7 @@ const Cart = () => {
       setCartItems(validItems);
     } catch (err) {
       console.error("Fetch cart error:", err);
+      toast.error("Failed to load cart");
       setCartItems([]);
     } finally {
       setLoading(false);
@@ -54,7 +55,7 @@ const Cart = () => {
     fetchCart();
   }, [isLoggedIn]);
 
-  // 🔹 Remove Item
+  /* ================= REMOVE ITEM ================= */
   const handleRemove = async (cartItemId) => {
     try {
       await instance.delete(`/cart/remove/${cartItemId}`, {
@@ -64,12 +65,15 @@ const Cart = () => {
       setCartItems((prev) =>
         prev.filter((item) => item._id !== cartItemId)
       );
+
+      toast.success("Item removed from cart");
     } catch (error) {
       console.error("Remove error:", error);
+      toast.error("Failed to remove item");
     }
   };
 
-  // 🔹 Increase Quantity
+  /* ================= INCREASE ================= */
   const handleIncrease = async (productId) => {
     try {
       await instance.post(
@@ -85,12 +89,15 @@ const Cart = () => {
             : item
         )
       );
+
+      toast.info("Quantity increased");
     } catch (error) {
       console.error("Increase error:", error);
+      toast.error("Failed to update quantity");
     }
   };
 
-  // 🔹 Decrease Quantity
+  /* ================= DECREASE ================= */
   const handleDecrease = async (cartItemId, productId, qty) => {
     if (qty <= 1) {
       handleRemove(cartItemId);
@@ -111,12 +118,15 @@ const Cart = () => {
             : item
         )
       );
+
+      toast.info("Quantity decreased");
     } catch (error) {
       console.error("Decrease error:", error);
+      toast.error("Failed to update quantity");
     }
   };
 
-  // 🔹 Total Amount
+  /* ================= TOTAL ================= */
   const totalAmount = cartItems.reduce(
     (sum, item) =>
       sum +
@@ -125,7 +135,8 @@ const Cart = () => {
         item.quantity,
     0
   );
-// 🔹 Apply Coupon
+
+  /* ================= APPLY COUPON ================= */
   const applyCoupon = async () => {
     try {
       setCouponError("");
@@ -135,67 +146,82 @@ const Cart = () => {
       });
 
       setDiscount(res.data.discountAmount);
-      setFinalPrice(res.data.finalPrice);
+      toast.success("Coupon applied successfully 🎉");
     } catch (error) {
       setDiscount(0);
-      setFinalPrice(0);
-      setCouponError(error.response?.data?.message || "Coupon invalid");
+      const msg =
+        error.response?.data?.message || "Invalid coupon";
+      setCouponError(msg);
+      toast.error(msg);
     }
   };
+
   const finalAmount = totalAmount - discount;
 
-  // 🔹 UI STATES
-  if (!isLoggedIn)
+  /* ================= UI STATES ================= */
+  if (!isLoggedIn) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg">Please login to see your cart.</p>
+        <p className="text-lg font-medium">
+          Please login to see your cart.
+        </p>
       </div>
     );
+  }
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg">Loading cart...</p>
+        <p className="text-lg font-medium">Loading cart...</p>
       </div>
     );
+  }
 
-  if (!cartItems.length)
+  if (!cartItems.length) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg">Your cart is empty.</p>
+        <p className="text-lg font-medium">
+          Your cart is empty.
+        </p>
       </div>
     );
+  }
 
+  /* ================= UI ================= */
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 py-10 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
 
-      {/* CART ITEMS */}
+      {/* Cart Items */}
       <div className="space-y-6">
         {cartItems.map((item) => (
           <div
             key={item._id}
-            className="flex flex-col sm:flex-row gap-6 bg-white shadow rounded-lg p-4"
+            className="flex flex-col md:flex-row gap-6 bg-white border rounded-xl p-4 hover:shadow-lg transition"
           >
             <img
-              src={`${import.meta.env.VITE_BASEURL}/${item.productId.image}`}
-              alt={item.productId.name}
-              className="w-32 h-32 object-cover rounded"
-            />
+  src={
+    item.productId?.images?.length
+      ? `${import.meta.env.VITE_BASEURL}/${item.productId.images[0]}`
+      : "/no-image.png"
+  }
+  alt={item.productId.name}
+  className="w-full md:w-32 h-32 object-cover rounded-lg border"
+/>
 
-            <div className="flex-1">
+
+            <div className="flex-1 space-y-3">
               <h2 className="text-lg font-semibold">
                 {item.productId.name}
               </h2>
 
-              <p className="flex items-center gap-1 text-gray-700 mb-3">
+              <p className="flex items-center gap-1">
                 <PiCurrencyInrLight />
                 {item.productId.discountedPrice ||
                   item.productId.originalPrice}
               </p>
 
-              {/* QUANTITY */}
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() =>
                     handleDecrease(
@@ -204,9 +230,9 @@ const Cart = () => {
                       item.quantity
                     )
                   }
-                  className="px-3 py-1 border rounded"
+                  className="w-8 h-8 border rounded-full"
                 >
-                  -
+                  −
                 </button>
 
                 <span className="font-semibold">
@@ -217,13 +243,12 @@ const Cart = () => {
                   onClick={() =>
                     handleIncrease(item.productId._id)
                   }
-                  className="px-3 py-1 border rounded"
+                  className="w-8 h-8 border rounded-full"
                 >
                   +
                 </button>
               </div>
 
-              {/* REMOVE */}
               <button
                 onClick={() => handleRemove(item._id)}
                 className="flex items-center gap-1 text-red-600 text-sm"
@@ -236,58 +261,47 @@ const Cart = () => {
         ))}
       </div>
 
-      {/* COUPON */}
-      {/* <div className="mt-8 flex justify-end">
-        <div className="bg-white p-4 rounded-lg shadow w-full sm:w-96">
-          <h3 className="font-semibold mb-2">Apply Coupon</h3>
+      {/* Coupon */}
+      <div className="mt-8 flex justify-end">
+        <div className="bg-white p-4 rounded-xl shadow w-full sm:w-96 space-y-3">
+          <h3 className="font-semibold">Apply Coupon</h3>
 
           <div className="flex gap-2">
             <input
               type="text"
-              value={coupon}
-              onChange={(e) =>
-                setCoupon(e.target.value.toUpperCase())
-              }
               placeholder="Enter coupon code"
-              className="flex-1 border px-3 py-2 rounded"
+              value={couponCode}
+              onChange={(e) =>
+                setCouponCode(e.target.value.toUpperCase())
+              }
+              className="flex-1 border px-3 py-2 rounded-lg"
             />
 
             <button
-              onClick={handleApplyCoupon}
-              className="bg-black text-white px-4 py-2 rounded"
+              onClick={applyCoupon}
+              className="bg-black text-white px-4 py-2 rounded-lg"
             >
               Apply
             </button>
           </div>
 
           {couponError && (
-            <p className="text-red-500 text-sm mt-2">
+            <p className="text-red-500 text-sm">
               {couponError}
             </p>
           )}
 
           {discount > 0 && (
-            <p className="text-green-600 text-sm mt-2">
+            <p className="text-green-600 text-sm font-medium">
               Discount Applied: ₹{discount}
             </p>
           )}
         </div>
-      </div> */}
+      </div>
 
-      <div className="coupon-box">
-                <input
-                  type="text"
-                  placeholder="Enter coupon code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                />
-                <button onClick={applyCoupon}>Apply</button>
-                {couponError && <p className="error">{couponError}</p>}
-              </div>
-
-      {/* TOTAL */}
-      <div className="mt-6 flex justify-end">
-        <div className="bg-gray-100 p-4 rounded-lg shadow w-full sm:w-96 space-y-2">
+      {/* Total */}
+      <div className="mt-8 flex justify-end">
+        <div className="bg-white border p-5 rounded-xl shadow w-full sm:w-96 space-y-3">
           <p className="flex justify-between">
             <span>Subtotal</span>
             <span className="flex items-center gap-1">
@@ -298,18 +312,22 @@ const Cart = () => {
           <p className="flex justify-between text-green-600">
             <span>Discount</span>
             <span className="flex items-center gap-1">
-              - <PiCurrencyInrLight /> {discount}
+              − <PiCurrencyInrLight /> {discount}
             </span>
           </p>
 
           <hr />
 
-          <h2 className="text-xl font-bold flex justify-between">
+          <h2 className="text-lg font-bold flex justify-between">
             <span>Total Payable</span>
             <span className="flex items-center gap-1">
               <PiCurrencyInrLight /> {finalAmount}
             </span>
           </h2>
+
+          <button className="w-full mt-4 bg-black text-white py-3 rounded-lg hover:bg-gray-800">
+            Proceed to Checkout
+          </button>
         </div>
       </div>
     </div>
@@ -317,4 +335,3 @@ const Cart = () => {
 };
 
 export default Cart;
-  
