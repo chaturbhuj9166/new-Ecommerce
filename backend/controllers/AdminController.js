@@ -1,6 +1,4 @@
 import Auth from "../models/Authmodel.js";
-// import Product from "../models/productmodel.js"; // 🔥 product model add
-
 import Product from "../models/Productmodel.js"; // 🔥 product model add
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -8,7 +6,7 @@ import "dotenv/config";
 
 /* ================= ADMIN LOGIN ================= */
 export async function loginAdmin(req, res) {
-  try {
+  try { 
     const data = req.body;
 
     const user = await Auth.findOne({ email: data.email });

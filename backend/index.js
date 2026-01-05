@@ -8,7 +8,7 @@ import connectToDB from "./db/connect.js";
 
 import productRouter from "./routes/productRouter.js";
 import authRouter from "./routes/Auth.js";
-import adminRouter from "./routes/admin.js"; // ✅ ONLY THIS
+import adminRouter from "./routes/Admin.js"; // ✅ ONLY THIS
 import cartRouter from "./routes/Cart.js";
 import checkRouter from "./routes/Check.js";
 import couponRouter from "./routes/Coupon.js";
