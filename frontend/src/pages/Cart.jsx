@@ -18,42 +18,42 @@ const Cart = () => {
   const [couponError, setCouponError] = useState("");
 
   /* ================= FETCH CART ================= */
-  const fetchCart = async () => {
-    if (!isLoggedIn) {
-      setCartItems([]);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await instance.get("/cart", {
-        withCredentials: true,
-      });
-
-      const cartArray = Array.isArray(res.data)
-        ? res.data
-        : res.data.cart || [];
-
-      const validItems = cartArray
-        .filter((item) => item.productId)
-        .map((item) => ({
-          ...item,
-          quantity: Number(item.quantity),
-        }));
-
-      setCartItems(validItems);
-    } catch (err) {
-      console.error("Fetch cart error:", err);
-      toast.error("Failed to load cart");
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchCart = async () => {
+      if (!isLoggedIn) {
+        setCartItems([]);
+        setLoading(false);
+        return;
+      }
+  
+      try {
+        const res = await instance.get("/cart", {
+          withCredentials: true,
+        });
+  
+        const cartArray = Array.isArray(res.data)
+          ? res.data
+          : res.data.cart || [];
+  
+        const validItems = cartArray
+          .filter((item) => item.productId)
+          .map((item) => ({
+            ...item,
+            quantity: Number(item.quantity),
+          }));
+  
+        setCartItems(validItems);
+      } catch (err) {
+        console.error("Fetch cart error:", err);
+        toast.error("Failed to load cart");
+        setCartItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCart();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, setCartItems]);
 
   /* ================= REMOVE ITEM ================= */
   const handleRemove = async (cartItemId) => {
@@ -202,7 +202,7 @@ const Cart = () => {
             <img
   src={
     item.productId?.images?.length
-      ? `${import.meta.env.VITE_BASEURL}/${item.productId.images[0]}`
+      ? item.productId.images[0].url
       : "/no-image.png"
   }
   alt={item.productId.name}

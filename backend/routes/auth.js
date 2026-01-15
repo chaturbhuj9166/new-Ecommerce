@@ -1,23 +1,27 @@
-import { Router } from "express";
+import express from "express";
 import {
-  deleteUsers,
-  getUsers,
+  registerUser,
+  verifyOtp,
   loginUsers,
   logoutUsers,
-  registerUser,
+  getUsers,
   updateUsers,
+  deleteUsers,
+  blockUser,
 } from "../controllers/AuthController.js";
-import { googleLogin } from "../controllers/googleLogin.js";
 
-const authRouter = Router();
+const router = express.Router();
 
-authRouter.get("/", getUsers);
-authRouter.post("/register", registerUser);
-authRouter.post("/login", loginUsers);
+// AUTH
+router.post("/register", registerUser);
+router.post("/verify-otp", verifyOtp);
+router.post("/login", loginUsers);
+router.post("/logout", logoutUsers);
 
-authRouter.post("/logout", logoutUsers);
-authRouter.delete("/:id", deleteUsers);
-authRouter.put("/:id", updateUsers);
-authRouter.post("/google-login", googleLogin);
+// USERS
+router.get("/users", getUsers);
+router.put("/update/:id", updateUsers);
+router.delete("/delete/:id", deleteUsers);
+router.patch("/block/:id", blockUser);
 
-export default authRouter;
+export default router;

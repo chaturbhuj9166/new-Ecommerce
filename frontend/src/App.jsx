@@ -20,6 +20,7 @@ import AdminLogin from "./admin/pages/Login.jsx";
 import Dashboard from "./admin/pages/Dashboard.jsx";
 import Manage from "./admin/pages/Manage.jsx";
 import AddProduct from "./admin/pages/AddProduct.jsx";
+import AddCategory from "./admin/pages/AddCategory.jsx";
 import AddCoupon from "./admin/pages/AddCoupon.jsx";
 import AllCoupons from "./admin/pages/AllCoupon.jsx";
 import EditCoupon from "./admin/pages/EditCoupon.jsx";
@@ -27,6 +28,7 @@ import EditProduct from "./admin/pages/EditProduct.jsx";
 import Management from "./admin/pages/Management.jsx";
 
 import ProtectedRouters from "./admin/components/ProtectedRouters.jsx";
+import AIChatBox from "./components/AiChatBox.jsx";
 
 const router = createBrowserRouter([
   /* ================= USER ROUTES ================= */
@@ -58,13 +60,14 @@ const router = createBrowserRouter([
           { path: "dashboard", element: <Dashboard /> },
           { path: "manage", element: <Manage /> },
           { path: "product/add", element: <AddProduct /> },
+          { path: "category/add", element: <AddCategory /> },
 
           { path: "coupons", element: <AllCoupons /> },
           { path: "coupons/add", element: <AddCoupon /> },
           { path: "coupons/edit/:id", element: <EditCoupon /> },
 
         { path: "edit-product/:id", element: <EditProduct /> },
-        { path: "management", element: <Management /> }
+        { path: "management", element: <Management /> },
 
 
 
@@ -79,6 +82,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <RouterProvider router={router} />
+        <AIChatBox />
       </CartProvider>
     </AuthProvider>
   );

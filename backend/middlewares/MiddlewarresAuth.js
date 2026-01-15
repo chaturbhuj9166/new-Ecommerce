@@ -1,79 +1,65 @@
-// import jwt from "jsonwebtoken";
-// import "dotenv/config";
-
-// export async function checkForlogin(req, res, next, customArg) {
-//   try {
-//     const referer = customArg || req.query.referer;
-//     if (!referer) {
-//       return res.status(401).json({ message: "Access denied" });
-//     }
-
-//     const cookies = req.cookies || {};
-//     let token;
-
-//     if (referer === "admin") token = cookies.admin_token;
-//     if (referer === "user") token = cookies.auth_token;
-
-//     if (!token) {
-//       return res.status(401).json({ message: "Not logged in" });
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//     if (decoded.role !== referer) {
-//       return res.status(403).json({ message: "Forbidden: Invalid role" });
-//     }
-
-//     // 🔥🔥🔥 MOST IMPORTANT FIX
-//     req.user = decoded;        // ✅ ADD THIS
-//     req.userId = decoded.id;   // (optional)
-//     req.userRole = decoded.role;
-
-//     return next(); // 🔥 MUST
-//   } catch (err) {
-//     return res.status(401).json({ message: "Invalid or expired token" });
-//   }
-// }
+import jwt from "jsonwebtoken"
+import "dotenv/config"
 
 
 
-
-
-
-
-
-
-
-import jwt from "jsonwebtoken";
-import "dotenv/config";
-
-export function checkForlogin(role) {
-  return async function (req, res, next) {
+export async function checkAuth(req, res, next) {
     try {
-      const cookies = req.cookies || {};
-      let token;
+        const token = req.cookies.auth_token
+        if (!token)
+            return res.status(401).json({ message: "you need to log in to perform this action" });
 
-      if (role === "admin") token = cookies.admin_token;
-      if (role === "user") token = cookies.auth_token;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.id;
+        next();
 
-      if (!token) {
-        return res.status(401).json({ message: "Not logged in" });
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      if (decoded.role !== role) {
-        return res.status(403).json({ message: "Forbidden: Invalid role" });
-      }
-
-      // 🔥 attach user
-      req.user = decoded;
-      req.userId = decoded.id;
-      req.userRole = decoded.role;
-
-      next();
-    } catch (err) {
-      return res.status(401).json({ message: "Invalid or expired token" });
     }
-  };
+    catch (error) {
+        return res.status(500).json({ message: error });
+
+    }
+}
+export async function checkForlogin(req, res) {
+  try {
+    const { referer } = req.query;
+
+    if (!referer) {
+      return res.status(422).json({
+        loggedIn: false,
+        message: "referer missing",
+      });
+    }
+
+    let token;
+
+    if (referer === "admin") token = req.cookies.admin_token;
+    if (referer === "user") token = req.cookies.auth_token;
+
+    if (!token) {
+      return res.status(200).json({
+        loggedIn: false,
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 🔐 role match check
+    if (decoded.role !== referer) {
+      return res.status(200).json({
+        loggedIn: false,
+      });
+    }
+
+    // ✅ SUCCESS
+    return res.status(200).json({
+      loggedIn: true,
+      role: decoded.role,
+      userId: decoded.id,
+    });
+
+  } catch (error) {
+    return res.status(200).json({
+      loggedIn: false,
+    });
+  }
 }

@@ -16,24 +16,23 @@ const SingleProduct = () => {
   const [cartLoading, setCartLoading] = useState(false); // 🔥 ADD TO CART LOADER
 
   useEffect(() => {
+    async function fetchProduct() {
+      setLoading(true);
+      try {
+        const res = await instance.get(`/product/slug/${slug}`);
+
+        setTimeout(() => {
+          setProduct(res.data);
+          setMainImage(res.data.images[0]);
+          setLoading(false);
+        }, 1000);
+      } catch {
+        setLoading(false);
+        toast.error("Product not found");
+      }
+    }
     fetchProduct();
   }, [slug]);
-
-  async function fetchProduct() {
-    setLoading(true);
-    try {
-      const res = await instance.get(`/product/slug/${slug}`);
-
-      setTimeout(() => {
-        setProduct(res.data);
-        setMainImage(res.data.images[0]);
-        setLoading(false);
-      }, 1000);
-    } catch (err) {
-      setLoading(false);
-      toast.error("Product not found");
-    }
-  }
 
   async function handleAddToCart(productId) {
     if (!isLoggedIn) {
@@ -91,7 +90,7 @@ const SingleProduct = () => {
             {product.images.map((img, i) => (
               <img
                 key={i}
-                src={`${import.meta.env.VITE_BASEURL}/${img}`}
+                src={img.url}
                 onClick={() => setMainImage(img)}
                 className={`w-16 h-16 object-cover rounded-lg cursor-pointer border
                   ${
@@ -105,7 +104,7 @@ const SingleProduct = () => {
 
           <div className="flex-1 h-[420px] rounded-xl overflow-hidden shadow-lg bg-gray-100">
             <img
-              src={`${import.meta.env.VITE_BASEURL}/${mainImage}`}
+              src={mainImage.url}
               alt={product.name}
               className="w-full h-full object-cover"
             />

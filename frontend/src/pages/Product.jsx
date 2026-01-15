@@ -21,6 +21,8 @@ function Products() {
       setLoading(false);
     }
   }
+  console.log(products);
+  
 
   if (loading) {
     return (

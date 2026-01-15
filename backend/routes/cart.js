@@ -36,12 +36,12 @@ import {
   fetchCart,
   removeCartItem,
 } from "../controllers/Cart.js";
-import { checkForlogin } from "../middlewares/MiddlewarresAuth.js";
+import { checkAuth, checkForlogin } from "../middlewares/MiddlewarresAuth.js";
 
 const cartRouter = Router();
 
-cartRouter.post("/add", checkForlogin("user"), addToCart);
-cartRouter.get("/", checkForlogin("user"), fetchCart);
-cartRouter.delete("/remove/:id", checkForlogin("user"), removeCartItem);
+cartRouter.post("/add", checkAuth, addToCart);
+cartRouter.get("/", checkAuth, fetchCart);
+cartRouter.delete("/remove/:id", checkAuth, removeCartItem);
 
 export default cartRouter;

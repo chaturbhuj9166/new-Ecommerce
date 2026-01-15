@@ -8,7 +8,7 @@ const Management = () => {
   const [admins, setAdmins] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   /* ================= FETCH USERS ================= */
   const fetchAllUsers = async () => {
@@ -17,18 +17,14 @@ const Management = () => {
         withCredentials: true,
       });
 
-      const adminList = res.data.filter(
-        (u) => u.role === "admin"
-      );
-      const userList = res.data.filter(
-        (u) => u.role === "user"
-      );
+      const adminList = res.data.filter((u) => u.role === "admin");
+      const userList = res.data.filter((u) => u.role === "user");
 
       setAdmins(adminList);
       setUsers(userList);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load users");` `
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -38,22 +34,47 @@ const Management = () => {
     fetchAllUsers();
   }, []);
 
-  /* ================= DELETE ================= */
+  /* ================= DELETE USER ================= */
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this account?")) return;
+    if (!window.confirm("Delete this account permanently?")) return;
 
     try {
       await instance.delete(`/user/delete/${id}`, {
         withCredentials: true,
       });
 
-      setAdmins((prev) => prev.filter((u) => u._id !== id));
-      setUsers((prev) => prev.filter((u) => u._id !== id));
-
-      toast.success("User deleted");
+      toast.success("User deleted successfully");
+      fetchAllUsers();
     } catch (error) {
       console.error(error);
       toast.error("Delete failed");
+    }
+  };
+
+  /* ================= BLOCK / UNBLOCK ================= */
+  const handleBlockToggle = async (id) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to change block status?"
+      )
+    )
+      return;
+
+    try {
+      const res = await instance.patch(
+        `/admin/block-user/${id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      toast.success(res.data.message);
+      fetchAllUsers();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message ||
+          "Block action failed"
+      );
     }
   };
 
@@ -70,12 +91,13 @@ const Management = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
-         <button
-            onClick={() => navigate("/admin/dashboard")}
-            className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition text-sm"
-          >
-            ← Back to Dashboard
-          </button>
+      <button
+        onClick={() => navigate("/admin/dashboard")}
+        className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition text-sm"
+      >
+        ← Back to Dashboard
+      </button>
+
       <h1 className="text-2xl font-bold">
         User & Admin Management
       </h1>
@@ -106,12 +128,29 @@ const Management = () => {
                   <td className="p-3">{admin.name}</td>
                   <td className="p-3">{admin.email}</td>
                   <td className="p-3">{admin.username}</td>
-                  <td className="p-3 text-center">
+                  <td className="p-3 flex justify-center gap-3">
                     <button
-                      onClick={() => handleDelete(admin._id)}
+                      onClick={() =>
+                        handleDelete(admin._id)
+                      }
                       className="text-red-600 hover:text-red-800"
                     >
                       <AiOutlineDelete />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleBlockToggle(admin._id)
+                      }
+                      className={`px-3 py-1 rounded text-white text-sm ${
+                        admin.isBlocked
+                          ? "bg-green-600 hover:bg-green-700"
+                          : "bg-red-600 hover:bg-red-700"
+                      }`}
+                    >
+                      {admin.isBlocked
+                        ? "Unblock"
+                        : "Block"}
                     </button>
                   </td>
                 </tr>
@@ -153,12 +192,29 @@ const Management = () => {
                   <td className="p-3">{user.name}</td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3">{user.username}</td>
-                  <td className="p-3 text-center">
+                  <td className="p-3 flex justify-center gap-3">
                     <button
-                      onClick={() => handleDelete(user._id)}
+                      onClick={() =>
+                        handleDelete(user._id)
+                      }
                       className="text-red-600 hover:text-red-800"
                     >
                       <AiOutlineDelete />
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleBlockToggle(user._id)
+                      }
+                      className={`px-3 py-1 rounded text-white text-sm ${
+                        user.isBlocked
+                          ? "bg-green-600 hover:bg-green-700"
+                          : "bg-red-600 hover:bg-red-700"
+                      }`}
+                    >
+                      {user.isBlocked
+                        ? "Unblock"
+                        : "Block"}
                     </button>
                   </td>
                 </tr>
@@ -178,4 +234,3 @@ const Management = () => {
 };
 
 export default Management;
-

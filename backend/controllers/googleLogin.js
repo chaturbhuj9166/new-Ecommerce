@@ -7,14 +7,22 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
-    // console.log(req.body)
+    console.log("[googleLogin] received token length:", token?.length);
+    console.log("[googleLogin] server time (s):", Math.floor(Date.now() / 1000));
 
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const { email, name, picture, sub } = ticket.getPayload();
+    const payload = ticket.getPayload();
+    console.log("[googleLogin] token payload:", {
+      email: payload?.email,
+      name: payload?.name,
+      sub: payload?.sub,
+    });
+
+    const { email, name, picture, sub } = payload;
 
     let user = await Auth.findOne({ email });
 
@@ -45,6 +53,12 @@ export const googleLogin = async (req, res) => {
 
     res.status(200).json({ message: "Login success", user });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("[googleLogin] error:", error?.stack || error);
+    const msg = error?.message || "Internal Server Error";
+    if (process.env.NODE_ENV === "production") {
+      res.status(500).json({ message: "Internal Server Error" });
+    } else {
+      res.status(500).json({ message: msg, stack: error?.stack });
+    }
   }
 };

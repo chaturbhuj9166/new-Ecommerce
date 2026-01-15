@@ -1,85 +1,38 @@
-// import express from "express";
-// import path from "path";
-// import cors from "cors";
-// import cookieParser from "cookie-parser";
-// import "dotenv/config";
-
-// import connectToDB from "./db/connect.js";
-
-// import productRouter from "./routes/productRouter.js";
-// import authRouter from "./routes/Auth.js";
-// import adminRouter from "./routes/Admin.js"; // ✅ ONLY THIS
-// import cartRouter from "./routes/Cart.js";
-// import checkRouter from "./routes/Check.js";
-// import couponRouter from "./routes/Coupon.js";
-
-// const app = express();
-
-// /* ================= MIDDLEWARES ================= */
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// app.use(cookieParser());
-
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   })
-// );
-
-// /* ================= DATABASE ================= */
-// await connectToDB();
-
-// /* ================= STATIC FILES ================= */
-// app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
-// /* ================= ROUTES ================= */
-// app.use("/product", productRouter);
-// app.use("/user", authRouter);
-// app.use("/admin", adminRouter); // ✅ FIXED
-// app.use("/check", checkRouter);
-// app.use("/cart", cartRouter);
-// app.use("/coupon", couponRouter);
-
-// /* ================= SERVER ================= */
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () =>
-//   console.log(`🚀 Server started at http://localhost:${PORT}`)
-// );
-
-
-
-
-
-
 import express from "express";
 import path from "path";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import connectToDB from "./db/connect.js";
 import "dotenv/config";
 
-import connectToDB from "./db/connect.js";
-
+import checkRouter from "./routes/check.js";
 import productRouter from "./routes/productRouter.js";
 import authRouter from "./routes/auth.js";
 import adminRouter from "./routes/admin.js";
 import cartRouter from "./routes/cart.js";
-import checkRouter from "./routes/check.js";
 import couponRouter from "./routes/coupon.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
+import chatRouter from "./routes/chatRouter.js";
+
 
 const app = express();
 
-/* ================= MIDDLEWARES ================= */
+// Allow postMessage from Google popups — relax COOP to allow popups
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+/* ================= MIDDLEWARES ================= */
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173",  
     credentials: true,
   })
 );
+app.use(cookieParser());
 
 /* ================= DATABASE ================= */
 await connectToDB();
@@ -92,8 +45,11 @@ app.use("/product", productRouter);
 app.use("/user", authRouter);
 app.use("/admin", adminRouter);
 app.use("/cart", cartRouter);
-app.use("/check", checkRouter);
+app.use("/check", checkRouter); 
 app.use("/coupon", couponRouter);
+app.use("/category", categoryRoutes);
+app.use("/chat", chatRouter);
+
 
 /* ================= SERVER ================= */
 const PORT = process.env.PORT || 3000;

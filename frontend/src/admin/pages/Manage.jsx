@@ -71,7 +71,7 @@ const Manage = () => {
               >
                 <td className="p-3">
                   <img
-                    src={`${import.meta.env.VITE_BASEURL}/${p.images[0]}`}
+                    src={p.images[0]?.url}
                     className="w-12 h-12 rounded object-cover border"
                     alt={p.name}
                   />

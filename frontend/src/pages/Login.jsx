@@ -45,7 +45,7 @@ function Login() {
         setLoading(false);
         navigate(location.state?.from || "/");
       }, 2000);
-    } catch (error) {
+    } catch {
       setLoading(false);
       toast.error("❌ Invalid email or password");
     }
@@ -56,6 +56,7 @@ function Login() {
     try {
       setLoading(true);
 
+      console.log("google credential:", credentialResponse);
       await instance.post("/user/google-login", {
         token: credentialResponse.credential,
       });
@@ -67,7 +68,7 @@ function Login() {
         setLoading(false);
         navigate("/");
       }, 2000);
-    } catch (error) {
+    } catch {
       setLoading(false);
       toast.error("❌ Google login failed");
     }

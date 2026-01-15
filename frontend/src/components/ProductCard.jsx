@@ -12,7 +12,7 @@ const ProductCard = ({ product }) => {
       {/* IMAGE */}
       <div className="w-full h-48 bg-gray-100 overflow-hidden">
         <img
-          src={`${import.meta.env.VITE_BASEURL}/${product.images[0]}`}
+          src={product.images[0]?.url}
           alt={product.name}
           className="w-full h-full object-cover
                      group-hover:scale-110

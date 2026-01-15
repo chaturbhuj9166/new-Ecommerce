@@ -14,7 +14,7 @@ const AllCoupons = () => {
     try {
       const res = await instance.get("/coupon/all");
       setCoupons(res.data.coupons || []);
-    } catch (err) {
+    } catch {
       setError("Failed to fetch coupons");
     } finally {
       setLoading(false);

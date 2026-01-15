@@ -1,4 +1,6 @@
 import Product from "../models/Productmodel.js";
+import uploadToCloudinary from "../middlewares/cloudinary.js";
+import { v2 as cloudinary } from 'cloudinary';
 
 /* ===== ADD PRODUCT ===== */
 export async function addProduct(req, res) {
@@ -9,18 +11,22 @@ export async function addProduct(req, res) {
       return res.status(400).json({ message: "At least one image required" });
     }
 
-    const images = req.files.map(
-      (file) => `uploads/${file.filename}`
-    );
+    const images = [];
+
+    for (const file of req.files) {
+      const img = await uploadToCloudinary(file);
+      images.push(img);
+    }
 
     const product = new Product({
-      ...req.body,
-      images,
+      ...req.body,   // name, price, category etc
+      images,        // cloudinary images
     });
 
     await product.save();
     res.status(201).json(product);
   } catch (err) {
+    console.error("ADD PRODUCT ERROR 👉", err);
     res.status(500).json({ message: err.message });
   }
 }
@@ -30,6 +36,7 @@ export async function getProduct(req, res) {
   const products = await Product.find().sort({ createdAt: -1 });
   res.json(products);
 }
+
 
 /* ===== GET BY ID ===== */
 export async function getProductById(req, res) {
@@ -43,9 +50,21 @@ export async function updateProduct(req, res) {
   const updatedData = { ...req.body };
 
   if (req.files && req.files.length > 0) {
-    updatedData.images = req.files.map(
-      (file) => `uploads/${file.filename}`
-    );
+    const images = [];
+
+    for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+        { folder: "products" }
+      );
+
+      images.push({
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
+    }
+
+    updatedData.images = images;
   }
 
   const product = await Product.findByIdAndUpdate(
@@ -59,6 +78,17 @@ export async function updateProduct(req, res) {
 
 /* ===== DELETE ===== */
 export async function deleteProduct(req, res) {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).json({ message: "Not found" });
+  }
+
+  // 🔥 Cloudinary cleanup
+  for (const img of product.images) {
+    await cloudinary.uploader.destroy(img.public_id);
+  }
+
   await Product.findByIdAndDelete(req.params.id);
   res.json({ message: "Deleted" });
 }

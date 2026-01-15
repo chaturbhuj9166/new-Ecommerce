@@ -1,162 +1,206 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import "react-toastify/dist/ReactToastify.css";
 
-function Register() {
-  const [data, setData] = useState({
-    name: "",
-    phone: "",
-    username: "",
-    email: "",
-    password: "",
-    role: "user",
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
+export default function Register() {
   const navigate = useNavigate();
 
+  const [data, setData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    username: "",
+    password: "",
+  });
+
+  const [step, setStep] = useState("register"); // register | otp
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // ================= HANDLE CHANGE =================
   function handleChange(e) {
     let { name, value } = e.target;
 
-    // 🔥 PHONE NUMBER: ONLY 10 DIGITS
+    // phone only numbers
     if (name === "phone") {
-      value = value.replace(/\D/g, ""); // only numbers
-      if (value.length > 10) return;    // stop after 10
+      value = value.replace(/\D/g, "");
     }
 
-    setData((prev) => ({ ...prev, [name]: value }));
+    setData({ ...data, [name]: value });
   }
 
-  async function handleSubmit(e) {
+  // ================= REGISTER + SEND OTP =================
+  async function handleRegister(e) {
     e.preventDefault();
-
-    if (data.phone.length !== 10) {
-      toast.error("📱 Phone number must be 10 digits");
-      return;
-    }
+    setLoading(true);
 
     try {
+      console.log("REGISTER DATA:", data);
+
       await axios.post(
         `${import.meta.env.VITE_BASEURL}/user/register`,
         data
       );
 
-      toast.success("🎉 User Registered Successfully!", {
-        autoClose: 2000,
-      });
+      toast.success("📧 OTP sent to your email");
+      setStep("otp");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Registration Failed!"
+  // ================= VERIFY OTP =================
+  async function handleVerifyOtp() {
+    if (!otp) return toast.error("⚠️ Please enter OTP");
+
+    setLoading(true);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BASEURL}/user/verify-otp`,
+        {
+          email: data.email,
+          otp,
+        }
       );
+
+      toast.success("✅ Email verified successfully");
+      navigate("/login");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Invalid OTP");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">
-          Register to Our E-commerce
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-8">
+
+        {/* HEADER */}
+        <h2 className="text-2xl font-bold text-center mb-2 text-gray-800">
+          {step === "register" ? "Create Account" : "Verify OTP"}
         </h2>
+        <p className="text-sm text-center text-gray-500 mb-6">
+          {step === "register"
+            ? "Fill details to register"
+            : `OTP sent to ${data.email}`}
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* ================= REGISTER FORM ================= */}
+        {step === "register" && (
+          <form onSubmit={handleRegister} className="space-y-4">
 
-          <input
-            type="text"
-            name="name"
-            placeholder="Full Name"
-            value={data.name}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
-          />
-
-          {/* 📱 PHONE NUMBER */}
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone Number"
-            value={data.phone}
-            onChange={handleChange}
-            required
-            inputMode="numeric"
-            pattern="[0-9]{10}"
-            maxLength={10}
-            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
-          />
-
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={data.username}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
-          />
-
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={data.email}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
-          />
-
-          {/* 🔐 PASSWORD */}
-          <div className="relative">
             <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={data.password}
+              name="name"
+              value={data.name}
+              placeholder="Full Name"
               onChange={handleChange}
               required
-              className="w-full border rounded-md px-4 py-2 pr-10 focus:ring-2 focus:ring-black outline-none"
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
             />
 
-            <span
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500"
+            <input
+              name="email"
+              value={data.email}
+              placeholder="Email Address"
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+            />
+
+            <input
+              name="phone"
+              value={data.phone}
+              placeholder="Phone Number"
+              maxLength={10}
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+            />
+
+            <input
+              name="username"
+              value={data.username}
+              placeholder="Username"
+              onChange={handleChange}
+              required
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-black outline-none"
+            />
+
+            {/* PASSWORD */}
+            <div className="relative">
+              <input
+                name="password"
+                value={data.password}
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-black outline-none"
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-black"
+              >
+                {showPassword ? (
+                  <AiOutlineEyeInvisible size={22} />
+                ) : (
+                  <AiOutlineEye size={22} />
+                )}
+              </span>
+            </div>
+
+            <button
+              disabled={loading}
+              className={`w-full py-2 rounded-lg text-white font-semibold transition ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-black hover:bg-gray-800"
+              }`}
             >
-              {showPassword ? (
-                <AiOutlineEyeInvisible size={20} />
-              ) : (
-                <AiOutlineEye size={20} />
-              )}
-            </span>
+              {loading ? "Sending OTP..." : "Register"}
+            </button>
+          </form>
+        )}
+
+        {/* ================= OTP FORM ================= */}
+        {step === "otp" && (
+          <div className="space-y-4">
+
+            <input
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              maxLength={6}
+              className="w-full text-center tracking-widest text-lg border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 outline-none"
+            />
+
+            <button
+              onClick={handleVerifyOtp}
+              disabled={loading}
+              className={`w-full py-2 rounded-lg text-white font-semibold transition ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {loading ? "Verifying..." : "Verify OTP"}
+            </button>
+
+            <p
+              onClick={() => setStep("register")}
+              className="text-center text-sm text-blue-600 cursor-pointer hover:underline"
+            >
+              Change Email?
+            </p>
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition font-semibold"
-          >
-            Register
-          </button>
-        </form>
-
-        <p className="text-sm text-center mt-4">
-          Already have an account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-blue-600 hover:underline cursor-pointer font-medium"
-          >
-            Login
-          </span>
-        </p>
+        )}
       </div>
-
-      <ToastContainer />
     </div>
   );
 }
-
-export default Register;

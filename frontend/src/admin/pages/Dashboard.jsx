@@ -22,7 +22,7 @@ function AdminDashboard() {
         { withCredentials: true }
       );
       setStats(res.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
@@ -88,6 +88,15 @@ function AdminDashboard() {
 
           <li>
             <Link
+              to="/admin/category/add"
+              className="block px-4 py-2 rounded-lg hover:bg-white/20 transition"
+            >
+              Add Category
+            </Link>
+          </li>
+
+          <li>
+            <Link
               to="/admin/management"
               className="block px-4 py-2 rounded-lg hover:bg-white/20 transition"
             >
@@ -112,6 +121,9 @@ function AdminDashboard() {
               All Coupons
             </Link>
           </li>
+
+       
+
         </ul>
 
         <button

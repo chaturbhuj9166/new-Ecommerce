@@ -23,7 +23,7 @@ const ProtectedRouters = () => {
       } else {
         setIsAllowed(false);
       }
-    } catch (error) {
+    } catch {
       setIsAllowed(false);
     } finally {
       setLoading(false);

@@ -18,20 +18,39 @@ const AddProduct = () => {
   const productId = location.state?.productId;
   const isEdit = Boolean(productId);
 
+  const [categories, setCategories] = useState([]);
+
   const [data, setData] = useState({
     name: "",
     slug: "",
-    category: "",
+    category: "", // slug store hoga
     description: "",
     originalPrice: "",
     discountedPrice: "",
     images: [],
   });
 
+  // 🔹 Fetch categories
+  useEffect(() => {
+    instance
+      .get("/category")
+      .then((res) => setCategories(res.data?.categories || []))
+      .catch(() => {
+        setCategories([]);
+        toast.error("Failed to load categories");
+      });
+  }, []);
+
+  // 🔹 Fetch product (edit mode)
   useEffect(() => {
     if (isEdit) {
       instance.get(`/product/${productId}`).then((res) => {
-        setData({ ...res.data, images: [] });
+        setData({
+          ...res.data,
+          images: [],
+          originalPrice: res.data.originalPrice?.toString() || "",
+          discountedPrice: res.data.discountedPrice?.toString() || "",
+        });
       });
     }
   }, [isEdit, productId]);
@@ -41,13 +60,15 @@ const AddProduct = () => {
 
     if (name === "images") {
       setData({ ...data, images: Array.from(files) });
-    } else if (name === "name") {
+    } 
+    else if (name === "name") {
       setData({
         ...data,
         name: value,
         slug: isEdit ? data.slug : generateSlug(value),
       });
-    } else {
+    } 
+    else {
       setData({ ...data, [name]: value });
     }
   }
@@ -56,25 +77,37 @@ const AddProduct = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      if (key === "images") {
-        data.images.forEach((img) =>
-          formData.append("images", img)
-        );
-      } else {
-        formData.append(key, data[key]);
-      }
-    });
 
-    if (isEdit) {
-      await instance.put(`/product/${productId}`, formData);
-      toast.success("Product updated");
-    } else {
-      await instance.post("/product", formData);
-      toast.success("Product added");
+    // Append simple fields explicitly to control formats
+    formData.append("name", data.name);
+    formData.append("slug", data.slug);
+    formData.append("category", data.category);
+    formData.append("description", data.description);
+    formData.append("originalPrice", Number(data.originalPrice || 0));
+    formData.append("discountedPrice", Number(data.discountedPrice || 0));
+
+    // Append files only if they are File objects (new uploads)
+    if (Array.isArray(data.images) && data.images.length > 0) {
+      data.images.forEach((img) => {
+        if (img instanceof File) {
+          formData.append("images", img);
+        }
+      });
     }
 
-    navigate("/admin/manage");
+    try {
+      if (isEdit) {
+        await instance.put(`/product/${productId}`, formData);
+        toast.success("Product updated");
+      } else {
+        await instance.post("/product", formData);
+        toast.success("Product added");
+      }
+
+      navigate("/admin/manage");
+    } catch {
+      toast.error("Something went wrong");
+    }
   }
 
   return (
@@ -103,12 +136,13 @@ const AddProduct = () => {
 
           {/* NAME */}
           <div>
-            <label className="block text-sm font-semibold mb-1">Product Name</label>
+            <label className="block text-sm font-semibold mb-1">
+              Product Name
+            </label>
             <input
               name="name"
               value={data.name}
               onChange={handleChange}
-              placeholder="Enter product name"
               required
               className="w-full rounded-lg border px-4 py-2
                          focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -117,40 +151,50 @@ const AddProduct = () => {
 
           {/* SLUG */}
           <div>
-            <label className="block text-sm font-semibold mb-1">Slug</label>
+            <label className="block text-sm font-semibold mb-1">
+              Slug
+            </label>
             <input
               name="slug"
               value={data.slug}
               readOnly
-              placeholder="Auto generated"
               className="w-full rounded-lg border bg-gray-100
                          px-4 py-2 cursor-not-allowed"
             />
           </div>
 
-          {/* CATEGORY */}
+          {/* ✅ CATEGORY DROPDOWN */}
           <div>
-            <label className="block text-sm font-semibold mb-1">Category</label>
-            <input
+            <label className="block text-sm font-semibold mb-1">
+              Category
+            </label>
+            <select
               name="category"
               value={data.category}
               onChange={handleChange}
-              placeholder="Category"
               required
               className="w-full rounded-lg border px-4 py-2
                          focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
+            >  
+              <option value="">Select Category</option>
+              {(Array.isArray(categories) ? categories : []).map((cat) => (
+                <option key={cat._id} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* DESCRIPTION */}
           <div>
-            <label className="block text-sm font-semibold mb-1">Description</label>
+            <label className="block text-sm font-semibold mb-1">
+              Description
+            </label>
             <textarea
               name="description"
               value={data.description}
               onChange={handleChange}
               rows="4"
-              placeholder="Product description"
               required
               className="w-full rounded-lg border px-4 py-2
                          focus:ring-2 focus:ring-indigo-500 outline-none"
@@ -159,61 +203,39 @@ const AddProduct = () => {
 
           {/* PRICES */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-1">Original Price</label>
-              <input
-                type="number"
-                name="originalPrice"
-                value={data.originalPrice}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border px-4 py-2
-                           focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-1">Discounted Price</label>
-              <input
-                type="number"
-                name="discountedPrice"
-                value={data.discountedPrice}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border px-4 py-2
-                           focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-            </div>
+            <input
+              type="number"
+              name="originalPrice"
+              value={data.originalPrice}
+              onChange={handleChange}
+              placeholder="Original Price"
+              required
+              className="w-full rounded-lg border px-4 py-2"
+            />
+            <input
+              type="number"
+              name="discountedPrice"
+              value={data.discountedPrice}
+              onChange={handleChange}
+              placeholder="Discounted Price"
+              required
+              className="w-full rounded-lg border px-4 py-2"
+            />
           </div>
 
-          {/* IMAGE UPLOAD */}
-          <div>
-            <label className="block text-sm font-semibold mb-2">
-              Product Images (Max 5)
-            </label>
+          {/* IMAGES */}
+          <input
+            type="file"
+            name="images"
+            multiple
+            accept="image/*"
+            onChange={handleChange}
+          />
 
-            <div className="border-2 border-dashed rounded-xl p-6 text-center
-                            hover:border-indigo-500 transition">
-              <input
-                type="file"
-                name="images"
-                multiple
-                accept="image/*"
-                onChange={handleChange}
-                className="w-full"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Upload up to 5 images (Amazon style gallery)
-              </p>
-            </div>
-          </div>
-
-          {/* SUBMIT */}
           <button
             type="submit"
             className="w-full py-3 rounded-xl text-white font-semibold
-                       bg-indigo-600 hover:bg-indigo-700
-                       transition shadow-lg"
+                       bg-indigo-600 hover:bg-indigo-700 transition"
           >
             {isEdit ? "Update Product" : "Add Product"}
           </button>
