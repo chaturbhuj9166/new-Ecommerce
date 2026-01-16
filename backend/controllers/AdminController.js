@@ -1,5 +1,5 @@
 import Auth from "../models/Authmodel.js";
-import Product from "../models/Productmodel.js"; // 🔥 product model add
+import Product from "../models/ProductModel.js"; // 🔥 product model add
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";

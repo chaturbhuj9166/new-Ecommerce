@@ -15,6 +15,7 @@ function Header() {
   // ✅ Correct auth destructuring (ONCE)
   const { isLoggedIn, handleLogout } = useAuth();
   const { cartItems } = useCart();
+  
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">

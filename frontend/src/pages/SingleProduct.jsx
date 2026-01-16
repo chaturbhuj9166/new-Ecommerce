@@ -13,7 +13,10 @@ const SingleProduct = () => {
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [loading, setLoading] = useState(true);
-  const [cartLoading, setCartLoading] = useState(false); // 🔥 ADD TO CART LOADER
+  const [cartLoading, setCartLoading] = useState(false); 
+  
+  // 🔥 ADD TO CART LOADER
+console.log(isLoggedIn);
 
   useEffect(() => {
     async function fetchProduct() {
