@@ -1,4 +1,4 @@
-import Product from "../models/ProductModel.js";
+import Product from "../models/productmodel.js";
 import uploadToCloudinary from "../middlewares/cloudinary.js";
 import { v2 as cloudinary } from 'cloudinary';
 
