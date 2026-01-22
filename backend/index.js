@@ -1,6 +1,7 @@
+import cors from "cors";
 import express from "express";
 import path from "path";
-import cors from "cors";
+
 import cookieParser from "cookie-parser";
 import connectToDB from "./db/connect.js";
 import "dotenv/config";
@@ -18,6 +19,13 @@ import "dotenv/config";
 
 const app = express();
 
+app.use(
+  cors({
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
+
 // Allow postMessage from Google popups — relax COOP to allow popups
 app.use((req, res, next) => {
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
@@ -27,12 +35,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 /* ================= MIDDLEWARES ================= */
 
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173", "http://localhost:5174"],
-    credentials: true,
-  })
-);
+
 app.use(cookieParser());
 
 /* ================= DATABASE ================= */
