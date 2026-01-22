@@ -2,7 +2,7 @@ import Auth from "../models/Authmodel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
-import Product from "../models/ProductModel.js";
+import Product from "../models/productmodel.js";
 
 /* ================= ADMIN LOGIN ================= */
 export async function loginAdmin(req, res) {
