@@ -21,13 +21,11 @@ function Products() {
       setLoading(false);
     }
   }
-  console.log(products);
-  
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
-        <p className="text-lg font-semibold text-gray-700">
+        <p className="text-lg font-semibold text-slate-600 animate-pulse">
           Loading products...
         </p>
       </div>
@@ -35,8 +33,12 @@ function Products() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold mb-10 text-center text-gray-800">
+    <div className="max-w-7xl mx-auto px-4 py-16">
+      <h2
+        className="text-4xl font-extrabold mb-12 text-center
+                   bg-gradient-to-r from-indigo-600 to-cyan-500
+                   bg-clip-text text-transparent"
+      >
         Our Products
       </h2>
 
@@ -44,17 +46,14 @@ function Products() {
         <div
           className="grid grid-cols-1 sm:grid-cols-2
                      md:grid-cols-3 lg:grid-cols-4
-                     gap-6"
+                     gap-8"
         >
           {products.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-            />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500">
+        <p className="text-center text-slate-500">
           No products found
         </p>
       )}

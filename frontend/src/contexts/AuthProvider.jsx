@@ -8,7 +8,7 @@ function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedinUser, setLoggedinUser] = useState(null);
   const [loading, setLoading] = useState(true);
-console.log(isLoggedIn);
+
 
   // 🔄 On page refresh
   useEffect(() => {

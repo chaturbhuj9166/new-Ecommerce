@@ -3,9 +3,8 @@ import express from "express";
 import path from "path";
 
 import cookieParser from "cookie-parser";
-import connectToDB from "./db/connect.js";
-import "dotenv/config";
 
+import "dotenv/config";
 import checkRouter from "./routes/check.js";
 import productRouter from "./routes/productRouter.js";
 import authRouter from "./routes/auth.js";
@@ -15,6 +14,7 @@ import couponRouter from "./routes/coupon.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import chatRouter from "./routes/chatRouter.js";
 import "dotenv/config";
+import connectToDB from "./db/connect.js";
 
 
 const app = express();

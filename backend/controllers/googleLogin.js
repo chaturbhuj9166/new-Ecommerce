@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import Auth from "../models/Authmodel.js";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv/config";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -46,8 +47,8 @@ export const googleLogin = async (req, res) => {
 
     res.cookie("auth_token", authToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

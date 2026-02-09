@@ -9,6 +9,9 @@ import {
   deleteUsers,
   blockUser,
 } from "../controllers/AuthController.js";
+import {
+  googleLogin,
+} from "../controllers/googleLogin.js";
 
 const router = express.Router();
 
@@ -17,7 +20,7 @@ router.post("/register", registerUser);
 router.post("/verify-otp", verifyOtp);
 router.post("/login", loginUsers);
 router.post("/logout", logoutUsers);
-
+router.post("/google-login", googleLogin);
 // USERS
 router.get("/users", getUsers);
 router.put("/update/:id", updateUsers);

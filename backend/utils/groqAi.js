@@ -1,8 +1,7 @@
-import Router from "express";
-import { chatAI, listModels } from "../controllers/chat.js";
+import Groq from "groq-sdk";
 
-const chatRouter = Router();
-chatRouter.post("/", chatAI);
-chatRouter.get("/models", listModels);
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
-export default chatRouter;
+export default groq;
