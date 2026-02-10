@@ -16,7 +16,7 @@ const SingleProduct = () => {
   const [cartLoading, setCartLoading] = useState(false); 
   
   // 🔥 ADD TO CART LOADER
-console.log(isLoggedIn);
+// console.log(isLoggedIn);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -37,33 +37,37 @@ console.log(isLoggedIn);
     fetchProduct();
   }, [slug]);
 
-  async function handleAddToCart(productId) {
-    if (!isLoggedIn) {
-      toast.info("Please login first");
-      navigate(`/login?nextPage=/product/${slug}`);
+ async function handleAddToCart(productId) {
+  try {
+    setCartLoading(true);
+
+    await instance.post(
+      "/cart/add",
+      { productId, quantity: 1 },
+      { withCredentials: true }
+    );
+
+    toast.success("Added to cart 🛒");
+
+    setTimeout(() => {
+      setCartLoading(false);
+      navigate("/cart");
+    }, 1000);
+
+  } catch (error) {
+    setCartLoading(false);
+
+    // 🔥 401 UNAUTHORIZED HANDLE
+    if (error.response && error.response.status === 401) {
+      toast.info("Session expired, please login again");
+      navigate("/login");
       return;
     }
 
-    try {
-      setCartLoading(true); // 🔥 start button loader
-
-      await instance.post(
-        "/cart/add",
-        { productId, quantity: 1 },
-        { withCredentials: true }
-      );
-
-      toast.success("Added to cart 🛒");
-
-      setTimeout(() => {
-        setCartLoading(false);
-        navigate("/cart");
-      }, 1000); // ⏳ 1 sec loader
-    } catch {
-      setCartLoading(false);
-      toast.error("Failed to add product");
-    }
+    toast.error("Failed to add product");
   }
+}
+
 
   // PAGE LOADER
   if (loading) {
