@@ -5,8 +5,10 @@ import { useCart } from "../contexts/CartProvider";
 import { PiCurrencyInrLight } from "react-icons/pi";
 import { AiOutlineDelete } from "react-icons/ai";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const { cartItems, setCartItems } = useCart();
 
@@ -325,7 +327,7 @@ const Cart = () => {
             </span>
           </h2>
 
-          <button className="w-full mt-4 bg-black text-white py-3 rounded-lg hover:bg-gray-800">
+          <button className="w-full mt-4 bg-black text-white py-3 rounded-lg hover:bg-gray-800" onClick={() => navigate("/checkout")}>
             Proceed to Checkout
           </button>
         </div>

@@ -15,6 +15,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import chatRouter from "./routes/chatRouter.js";
 import "dotenv/config";
 import connectToDB from "./db/connect.js";
+import orderRouter from "./routes/orderRouter.js";
 
 
 const app = express();
@@ -53,6 +54,8 @@ app.use("/check", checkRouter);
 app.use("/coupon", couponRouter);
 app.use("/category", categoryRoutes);
 app.use("/chat", chatRouter);
+
+app.use("/api/orders", orderRouter);
 
 
 /* ================= SERVER ================= */

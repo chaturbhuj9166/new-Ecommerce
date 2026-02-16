@@ -1,6 +1,6 @@
 // import { Router } from "express";
 // import { addToCart, fetchCart, removeCartItem } from "../controllers/Cart.js";
-// import { checkForlogin } from "../middlewares/MiddlewarresAuth.js";
+// import { checkForlogin } from "../middlewares/MiddlewaresAuth.js";
 
 // const cartRouter = Router();
 
@@ -36,7 +36,7 @@ import {
   fetchCart,
   removeCartItem,
 } from "../controllers/Cart.js";
-import { checkAuth, checkForlogin } from "../middlewares/MiddlewarresAuth.js";
+import { checkAuth, checkForlogin } from "../middlewares/MiddlewaresAuth.js";
 
 const cartRouter = Router();
 

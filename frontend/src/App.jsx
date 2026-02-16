@@ -12,8 +12,10 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Cart from "./pages/Cart.jsx";
-import Wishlist from "./pages/Wishlist.jsx";
+import Wishlist from "./pages/Wishlist";
 import SingleProduct from "./pages/SingleProduct.jsx";
+import Checkout from "./pages/Checkout";
+import MyOrders from "./pages/MyOrders";
 
 // ADMIN PAGES
 import AdminLogin from "./admin/pages/Login.jsx";
@@ -40,8 +42,10 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "cart", element: <Cart /> },
-      { path: "wishlist", element: <Wishlist /> },
+      { path: "/wishlist", element: <Wishlist />} ,
       { path: "product/:slug", element: <SingleProduct /> },
+      { path: "/checkout", element: <Checkout /> },
+      { path: "/my-orders", element: <MyOrders /> },
     ],
   },
 

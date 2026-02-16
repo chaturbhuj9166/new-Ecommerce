@@ -4,7 +4,12 @@ import Cart from "../models/Cart.js";
 export async function addToCart(req, res) {
   try {
     const { productId, quantity } = req.body;
-    const userId = req.userId;
+
+    if (!productId || !quantity) {
+      return res.status(400).json({ message: "ProductId and quantity required" });
+    }
+
+    const userId = req.user.id; // ✅ FIXED
 
     const existingCartItem = await Cart.findOne({ userId, productId });
 
@@ -26,7 +31,7 @@ export async function addToCart(req, res) {
       });
     }
 
-    if (quantity <= 0) {
+    if (Number(quantity) <= 0) {
       return res.status(400).json({ message: "Invalid quantity" });
     }
 
@@ -37,11 +42,14 @@ export async function addToCart(req, res) {
     });
 
     await productInCart.save();
+
     res.status(201).json({
       message: "Product added to cart",
       product: productInCart,
     });
+
   } catch (error) {
+    console.error("Cart Error:", error);
     res.status(500).json({ message: error.message });
   }
 }
@@ -49,11 +57,13 @@ export async function addToCart(req, res) {
 /* ================= FETCH CART ================= */
 export async function fetchCart(req, res) {
   try {
-    const cartItems = await Cart.find({ userId: req.userId }).populate(
-      "productId"
-    );
+    const cartItems = await Cart.find({
+      userId: req.user.id, // ✅ FIXED
+    }).populate("productId");
+
     res.status(200).json(cartItems);
   } catch (error) {
+    console.error("Fetch Cart Error:", error);
     res.status(500).json({ message: error.message });
   }
 }
@@ -71,6 +81,7 @@ export async function removeCartItem(req, res) {
 
     res.status(200).json({ message: "Item removed from cart" });
   } catch (error) {
+    console.error("Delete Cart Error:", error);
     res.status(500).json({ message: error.message });
   }
 }
