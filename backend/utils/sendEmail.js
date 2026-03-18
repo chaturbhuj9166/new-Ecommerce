@@ -4,7 +4,7 @@ sgMail.setApiKey(process.env.MY_SENDGRID_API_KEY);
 
 const FROM_SENDER = {
   email: process.env.MY_SENDGRID_EMAIL,
-  name: "Chaturbhuj Joshi", // 👈 yahan apna naam daalo
+  name: "Chaturbhuj Joshi",
 };
 
 export const sendOtpEmail = async (email, otp) => {
