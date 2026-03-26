@@ -23,7 +23,7 @@ dotenv.config();
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "https://new-ecommerce-t48z.onrender.com" , "http://localhost:5173","https://new-ecommerce-jet-five.vercel.app"],
+    origin: [process.env.FRONTEND_URL, "https://new-ecommerce-oi4884837-chaturbhuj-joshis-projects.vercel.app" , "http://localhost:5173"],
     credentials: true,
   })
 );
