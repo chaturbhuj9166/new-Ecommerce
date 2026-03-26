@@ -11,7 +11,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const { cartItems, setCartItems } = useCart();
-
+ 
   const [loading, setLoading] = useState(true);
 
   // Coupon states

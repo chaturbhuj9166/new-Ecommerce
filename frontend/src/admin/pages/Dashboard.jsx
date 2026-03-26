@@ -122,6 +122,15 @@ function AdminDashboard() {
             </Link>
           </li>
 
+          <li>
+  <Link
+    to="/admin/orders"
+    className="block px-4 py-2 rounded-lg hover:bg-white/20 transition"
+  >
+    Orders
+  </Link>
+</li>
+
        
 
         </ul>

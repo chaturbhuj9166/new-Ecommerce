@@ -9,17 +9,42 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ 🔥 ADD THIS FUNCTION (MAIN FIX)
+  const checkIsLoggedIn = async (role = "user") => {
+    try {
+      const res = await instance.get(
+        `/check/login?referer=${role}`,
+        { withCredentials: true }
+      );
+
+      if (res.data.loggedIn) {
+        setIsLoggedIn(true);
+        setUser(res.data);
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    } catch (error) {
+      setIsLoggedIn(false);
+      setUser(null);
+    }
+  };
+
   // ✅ Check login on page load
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const res = await instance.get("/check/login", {
-          withCredentials: true,
-        });
+        const res = await instance.get(
+          "/check/login?referer=user", // 🔥 FIX
+          { withCredentials: true }
+        );
 
-        if (res.status === 200) {
+        if (res.data.loggedIn) {
           setIsLoggedIn(true);
           setUser(res.data);
+        } else {
+          setIsLoggedIn(false);
+          setUser(null);
         }
       } catch (error) {
         setIsLoggedIn(false);
@@ -57,7 +82,14 @@ function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, user, loading, loginUser, handleLogout }}
+      value={{
+        isLoggedIn,
+        user,
+        loading,
+        loginUser,
+        handleLogout,
+        checkIsLoggedIn, // 🔥 ADD THIS
+      }}
     >
       {!loading && children}
     </AuthContext.Provider>

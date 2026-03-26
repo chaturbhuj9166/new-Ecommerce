@@ -28,6 +28,7 @@ import AllCoupons from "./admin/pages/AllCoupon.jsx";
 import EditCoupon from "./admin/pages/EditCoupon.jsx";
 import EditProduct from "./admin/pages/EditProduct.jsx";
 import Management from "./admin/pages/Management.jsx";
+import AdminOrders from "./admin/pages/AdminOrders.jsx";
 
 import ProtectedRouters from "./admin/components/ProtectedRouters.jsx";
 import AIChatBox from "./components/AiChatBox.jsx";
@@ -72,6 +73,7 @@ const router = createBrowserRouter([
 
         { path: "edit-product/:id", element: <EditProduct /> },
         { path: "management", element: <Management /> },
+        { path: "orders", element: <AdminOrders /> }
 
 
 

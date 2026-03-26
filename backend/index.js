@@ -13,16 +13,17 @@ import cartRouter from "./routes/cart.js";
 import couponRouter from "./routes/coupon.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import chatRouter from "./routes/chatRouter.js";
-import "dotenv/config";
+import dotenv from "dotenv";
 import connectToDB from "./db/connect.js";
 import orderRouter from "./routes/orderRouter.js";
 
 
 const app = express();
+dotenv.config();
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "https://new-ecommerce-t48z.onrender.com"],
+    origin: [process.env.FRONTEND_URL, "https://new-ecommerce-t48z.onrender.com" , "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -59,7 +60,6 @@ app.use("/api/orders", orderRouter);
 
 
 /* ================= SERVER ================= */
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server started at http://localhost:${PORT}`)
-);
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});

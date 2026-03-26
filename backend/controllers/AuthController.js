@@ -1,8 +1,6 @@
 import Auth from "../models/Authmodel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { generateOTP } from "../utils/otp.js";
-import { sendOtpEmail, sendWelcomeEmail } from "../utils/sendEmail.js";
 
 // ================= REGISTER =================
 export async function registerUser(req, res) {
@@ -16,12 +14,12 @@ export async function registerUser(req, res) {
     const exist = await Auth.findOne({
       $or: [{ email }, { username }],
     });
+
     if (exist) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = generateOTP();
 
     const user = await Auth.create({
       name,
@@ -30,55 +28,15 @@ export async function registerUser(req, res) {
       phone,
       password: hashedPassword,
       role: "user",
-      otp,
-      otpExpire: new Date(Date.now() + 5 * 60 * 1000),
-      isVerified: false,
       isBlocked: false,
     });
 
-    await sendOtpEmail(email, otp);
-
     return res.status(201).json({
-      message: "Registered successfully. OTP sent to email",
-      email,
+      message: "Registered successfully",
+      user,
     });
+
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
-    return res.status(500).json({ message: error.message });
-  }
-}
-
-// ================= VERIFY OTP =================
-export async function verifyOtp(req, res) {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ message: "Email & OTP required" });
-    }
-
-    const user = await Auth.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    if (user.isVerified)
-      return res.status(200).json({ message: "Already verified" });
-
-    if (new Date() > user.otpExpire)
-      return res.status(400).json({ message: "OTP expired" });
-
-    if (user.otp !== otp.toString())
-      return res.status(400).json({ message: "Invalid OTP" });
-
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpire = undefined;
-    await user.save();
-
-    await sendWelcomeEmail(user.email, user.name);
-
-    return res.status(200).json({ message: "Email verified successfully" });
-  } catch (error) {
-    console.error("VERIFY OTP ERROR:", error);
     return res.status(500).json({ message: error.message });
   }
 }
@@ -93,11 +51,6 @@ export async function loginUsers(req, res) {
 
     const user = await Auth.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid email" });
-
-    if (!user.isVerified)
-      return res
-        .status(403)
-        .json({ message: "Verify your email first" });
 
     if (user.isBlocked)
       return res.status(403).json({ message: "User is blocked" });
@@ -129,8 +82,8 @@ export async function loginUsers(req, res) {
         role: user.role,
       },
     });
+
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
     return res.status(500).json({ message: error.message });
   }
 }
@@ -141,17 +94,17 @@ export async function logoutUsers(req, res) {
   return res.status(200).json({ message: "Logout successful" });
 }
 
-// ================= GET ALL USERS =================
+// ================= GET USERS =================
 export async function getUsers(req, res) {
   try {
-    const users = await Auth.find().select("-password -otp -otpExpire");
+    const users = await Auth.find().select("-password");
     return res.status(200).json(users);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
-// ================= UPDATE USER =================
+// ================= UPDATE =================
 export async function updateUsers(req, res) {
   try {
     const { id } = req.params;
@@ -172,12 +125,13 @@ export async function updateUsers(req, res) {
       message: "User updated successfully",
       user,
     });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
-// ================= DELETE USER =================
+// ================= DELETE =================
 export async function deleteUsers(req, res) {
   try {
     const { id } = req.params;
@@ -187,12 +141,13 @@ export async function deleteUsers(req, res) {
       return res.status(404).json({ message: "User not found" });
 
     return res.status(200).json({ message: "User deleted successfully" });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 }
 
-// ================= BLOCK / UNBLOCK USER =================
+// ================= BLOCK =================
 export async function blockUser(req, res) {
   try {
     const { id } = req.params;
@@ -209,6 +164,7 @@ export async function blockUser(req, res) {
         ? "User blocked successfully"
         : "User unblocked successfully",
     });
+
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

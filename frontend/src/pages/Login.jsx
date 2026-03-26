@@ -26,30 +26,32 @@ function Login() {
   }
 
   // ✅ NORMAL LOGIN
-  async function handleSubmit(e) {
-    e.preventDefault();
+ async function handleSubmit(e) {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      await axios.post(
-        `${import.meta.env.VITE_BASEURL}/user/login`,
-        data,
-        { withCredentials: true }
-      );
+    await axios.post(
+      `${import.meta.env.VITE_BASEURL}/user/login`,
+      data,
+      { withCredentials: true }
+    );
 
-      await checkIsLoggedIn();
-      toast.success("✅ Login successful");
+    await checkIsLoggedIn("user"); // 🔥 FIX
 
-      setTimeout(() => {
-        setLoading(false);
-        navigate(location.state?.from || "/");
-      }, 2000);
-    } catch {
+    toast.success("✅ Login successful");
+
+    setTimeout(() => {
       setLoading(false);
-      toast.error("❌ Invalid email or password");
-    }
+      navigate(location.state?.from || "/");
+    }, 2000);
+  } catch (err) {
+    console.log(err.response);
+    setLoading(false);
+    toast.error(err.response?.data?.message || "Login failed");
   }
+}
 
   // ✅ GOOGLE LOGIN
   async function handleGoogleSuccess(credentialResponse) {
