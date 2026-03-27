@@ -21,12 +21,21 @@ import orderRouter from "./routes/orderRouter.js";
 const app = express();
 dotenv.config();
 
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://new-ecommerce-oi4884837-chaturbhuj-joshis-projects.vercel.app",
+  "http://localhost:5173",
+  "https://new-ecommerce-jet-five.vercel.app"
+];
+
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "https://new-ecommerce-oi4884837-chaturbhuj-joshis-projects.vercel.app" , "http://localhost:5173"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
+
 
 // Allow postMessage from Google popups — relax COOP to allow popups
 app.use((req, res, next) => {
