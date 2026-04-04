@@ -60,9 +60,9 @@ function Header() {
             </Link>
           )}
 
-          <Link to="/admin/login" className="flex items-center gap-2 text-blue-600">
+          {/* <Link to="/admin/login" className="flex items-center gap-2 text-blue-600">
             <FaUserShield /> Admin
-          </Link>
+          </Link> */}
 
           {/* LOGIN / LOGOUT */}
           {!loading && (

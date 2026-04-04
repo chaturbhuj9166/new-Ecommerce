@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthProvider";
 import { GoogleLogin } from "@react-oauth/google";
@@ -8,79 +7,70 @@ import { toast } from "react-toastify";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 function Login() {
-  const { checkIsLoggedIn } = useAuth();
+  const { checkIsLoggedIn, loginUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const googleAuthEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
   const [data, setData] = useState({
     email: "",
     password: "",
   });
 
-  const [loading, setLoading] = useState(false); // 🔥 loader
-  const [showPassword, setShowPassword] = useState(false); // 👁 eye icon
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
     setData({ ...data, [name]: value });
   }
 
-  // ✅ NORMAL LOGIN
- async function handleSubmit(e) {
-  e.preventDefault();
-
-  try {
+  async function handleSubmit(e) {
+    e.preventDefault();
     setLoading(true);
 
-    await axios.post(
-      `${import.meta.env.VITE_BASEURL}/user/login`,
-      data,
-      { withCredentials: true }
-    );
-
-    await checkIsLoggedIn("user"); // 🔥 FIX
-
-    toast.success("✅ Login successful");
-
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await instance.post("/user/login", data);
+      loginUser(res.data.user);
+      toast.success("Login successful");
       navigate(location.state?.from || "/");
-    }, 2000);
-  } catch (err) {
-    console.log(err.response);
-    setLoading(false);
-    toast.error(err.response?.data?.message || "Login failed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-  // ✅ GOOGLE LOGIN
   async function handleGoogleSuccess(credentialResponse) {
     try {
+      if (!credentialResponse?.credential) {
+        toast.error("Google login token was not received");
+        return;
+      }
+
       setLoading(true);
 
-      console.log("google credential:", credentialResponse);
       await instance.post("/user/google-login", {
         token: credentialResponse.credential,
       });
 
-      toast.success("🎉 Google login successful");
       await checkIsLoggedIn();
+      toast.success("Google login successful");
 
       setTimeout(() => {
         setLoading(false);
-        navigate("/");
+        navigate(location.state?.from || "/");
       }, 2000);
-    } catch {
+    } catch (err) {
       setLoading(false);
-      toast.error("❌ Google login failed");
+      toast.error(err.response?.data?.message || "Google login failed");
     }
   }
 
   function handleGoogleError() {
-    toast.error("❌ Google Login Failed");
+    toast.error("Google login failed");
   }
 
-  // 🔥 FULL SCREEN LOADER
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -98,7 +88,6 @@ function Login() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* EMAIL */}
           <input
             type="email"
             name="email"
@@ -106,11 +95,9 @@ function Login() {
             onChange={handleChange}
             placeholder="Email address"
             required
-            className="w-full border rounded-md px-4 py-2
-                       focus:ring-2 focus:ring-black outline-none"
+            className="w-full border rounded-md px-4 py-2 focus:ring-2 focus:ring-black outline-none"
           />
 
-          {/* PASSWORD WITH EYE ICON */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -119,14 +106,12 @@ function Login() {
               onChange={handleChange}
               placeholder="Password"
               required
-              className="w-full border rounded-md px-4 py-2 pr-10
-                         focus:ring-2 focus:ring-black outline-none"
+              className="w-full border rounded-md px-4 py-2 pr-10 focus:ring-2 focus:ring-black outline-none"
             />
 
             <span
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2
-                         cursor-pointer text-gray-600 hover:text-black"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600 hover:text-black"
             >
               {showPassword ? (
                 <AiOutlineEyeInvisible size={22} />
@@ -136,22 +121,21 @@ function Login() {
             </span>
           </div>
 
-          {/* LOGIN BUTTON */}
           <button
             type="submit"
-            className="w-full bg-black text-white py-2 rounded-md
-                       hover:bg-gray-800 transition font-semibold"
+            className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition font-semibold"
           >
             Login
           </button>
 
-          {/* GOOGLE LOGIN */}
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-            />
-          </div>
+          {googleAuthEnabled && (
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+              />
+            </div>
+          )}
         </form>
 
         <p className="text-sm text-center mt-4">

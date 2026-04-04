@@ -23,12 +23,17 @@ const AddProduct = () => {
   const [data, setData] = useState({
     name: "",
     slug: "",
-    category: "", // slug store hoga
+    category: "",
     description: "",
     originalPrice: "",
     discountedPrice: "",
     images: [],
   });
+
+  // 🔥 NEW STATE (sizes)
+  const [sizes, setSizes] = useState([]);
+
+  const sizeOptions = ["6", "7", "8", "9", "10"];
 
   // 🔹 Fetch categories
   useEffect(() => {
@@ -51,6 +56,9 @@ const AddProduct = () => {
           originalPrice: res.data.originalPrice?.toString() || "",
           discountedPrice: res.data.discountedPrice?.toString() || "",
         });
+
+        // 🔥 load sizes in edit
+        setSizes(res.data.sizes || []);
       });
     }
   }, [isEdit, productId]);
@@ -73,12 +81,20 @@ const AddProduct = () => {
     }
   }
 
+  // 🔥 SIZE SELECT FUNCTION
+  const toggleSize = (size) => {
+    if (sizes.includes(size)) {
+      setSizes(sizes.filter((s) => s !== size));
+    } else {
+      setSizes([...sizes, size]);
+    }
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
 
     const formData = new FormData();
 
-    // Append simple fields explicitly to control formats
     formData.append("name", data.name);
     formData.append("slug", data.slug);
     formData.append("category", data.category);
@@ -86,7 +102,11 @@ const AddProduct = () => {
     formData.append("originalPrice", Number(data.originalPrice || 0));
     formData.append("discountedPrice", Number(data.discountedPrice || 0));
 
-    // Append files only if they are File objects (new uploads)
+    // 🔥 IMPORTANT (sizes send)
+    sizes.forEach((size, i) => {
+      formData.append(`sizes[${i}]`, size);
+    });
+
     if (Array.isArray(data.images) && data.images.length > 0) {
       data.images.forEach((img) => {
         if (img instanceof File) {
@@ -114,7 +134,6 @@ const AddProduct = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center px-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
 
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-bold text-gray-800">
             {isEdit ? "Edit Product" : "Add Product"}
@@ -131,112 +150,49 @@ const AddProduct = () => {
           </button>
         </div>
 
-        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* NAME */}
-          <div>
-            <label className="block text-sm font-semibold mb-1">
-              Product Name
-            </label>
-            <input
-              name="name"
-              value={data.name}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border px-4 py-2
-                         focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
+          <input name="name" value={data.name} onChange={handleChange} placeholder="Name" className="w-full border px-4 py-2 rounded" />
+          <input name="slug" value={data.slug} readOnly className="w-full border px-4 py-2 bg-gray-100 rounded" />
+
+          <select name="category" value={data.category} onChange={handleChange} className="w-full border px-4 py-2 rounded">
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat.slug}>{cat.name}</option>
+            ))}
+          </select>
+
+          <textarea name="description" value={data.description} onChange={handleChange} className="w-full border px-4 py-2 rounded" />
+
+          <div className="grid grid-cols-2 gap-4">
+            <input type="number" name="originalPrice" value={data.originalPrice} onChange={handleChange} placeholder="Original Price" className="border px-4 py-2 rounded" />
+            <input type="number" name="discountedPrice" value={data.discountedPrice} onChange={handleChange} placeholder="Discounted Price" className="border px-4 py-2 rounded" />
           </div>
 
-          {/* SLUG */}
+          {/* 🔥 SIZE SELECT UI */}
           <div>
-            <label className="block text-sm font-semibold mb-1">
-              Slug
-            </label>
-            <input
-              name="slug"
-              value={data.slug}
-              readOnly
-              className="w-full rounded-lg border bg-gray-100
-                         px-4 py-2 cursor-not-allowed"
-            />
-          </div>
-
-          {/* ✅ CATEGORY DROPDOWN */}
-          <div>
-            <label className="block text-sm font-semibold mb-1">
-              Category
-            </label>
-            <select
-              name="category"
-              value={data.category}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border px-4 py-2
-                         focus:ring-2 focus:ring-indigo-500 outline-none"
-            >  
-              <option value="">Select Category</option>
-              {(Array.isArray(categories) ? categories : []).map((cat) => (
-                <option key={cat._id} value={cat.slug}>
-                  {cat.name}
-                </option>
+            <h3 className="font-semibold mb-2">Select Sizes</h3>
+            <div className="flex gap-2 flex-wrap">
+              {sizeOptions.map((size) => (
+                <button
+                  type="button"
+                  key={size}
+                  onClick={() => toggleSize(size)}
+                  className={`px-3 py-1 border rounded ${
+                    sizes.includes(size)
+                      ? "bg-black text-white"
+                      : "bg-white"
+                  }`}
+                >
+                  {size}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
-          {/* DESCRIPTION */}
-          <div>
-            <label className="block text-sm font-semibold mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={data.description}
-              onChange={handleChange}
-              rows="4"
-              required
-              className="w-full rounded-lg border px-4 py-2
-                         focus:ring-2 focus:ring-indigo-500 outline-none"
-            />
-          </div>
+          <input type="file" name="images" multiple onChange={handleChange} />
 
-          {/* PRICES */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="number"
-              name="originalPrice"
-              value={data.originalPrice}
-              onChange={handleChange}
-              placeholder="Original Price"
-              required
-              className="w-full rounded-lg border px-4 py-2"
-            />
-            <input
-              type="number"
-              name="discountedPrice"
-              value={data.discountedPrice}
-              onChange={handleChange}
-              placeholder="Discounted Price"
-              required
-              className="w-full rounded-lg border px-4 py-2"
-            />
-          </div>
-
-          {/* IMAGES */}
-          <input
-            type="file"
-            name="images"
-            multiple
-            accept="image/*"
-            onChange={handleChange}
-          />
-
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl text-white font-semibold
-                       bg-indigo-600 hover:bg-indigo-700 transition"
-          >
+          <button className="w-full bg-indigo-600 text-white py-3 rounded-xl">
             {isEdit ? "Update Product" : "Add Product"}
           </button>
         </form>

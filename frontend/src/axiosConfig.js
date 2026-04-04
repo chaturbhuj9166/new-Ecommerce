@@ -1,6 +1,14 @@
 import axios from "axios";
-const instance=axios.create({
-    baseURL: import.meta.env.VITE_BASEURL,
-    withCredentials: true
-})
+
+const baseURL =
+  import.meta.env.MODE === "development"
+    ? ""
+    : import.meta.env.VITE_BASEURL || "https://localhost:5000";
+
+const instance = axios.create({
+  baseURL,
+  withCredentials: true,
+});
+
+export { baseURL };
 export default instance;

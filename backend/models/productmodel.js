@@ -8,12 +8,19 @@ const productSchema = new mongoose.Schema(
     description: { type: String, required: true },
     originalPrice: { type: Number, required: true },
     discountedPrice: { type: Number, required: true },
+
     images: [
       {
         url: String,
         public_id: String,
       },
     ],
+
+    // 🔥 ADD THIS
+    sizes: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

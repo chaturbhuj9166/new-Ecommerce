@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { FaEdit, FaTrash, FaPlus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import instance from "../../axiosConfig";
 
 const Manage = () => {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_BASEURL}/product`)
+    instance
+      .get("/product")
       .then((res) => setProducts(res.data));
   }, []);
 

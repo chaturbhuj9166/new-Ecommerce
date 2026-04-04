@@ -1,8 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import instance from "../axiosConfig";
 
 function Register() {
   const navigate = useNavigate();
@@ -35,13 +35,7 @@ function Register() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BASEURL}/user/register`,
-        data,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await instance.post("/user/register", data);
 
       if (res.status === 201) {
         toast.success("✅ Registered successfully");

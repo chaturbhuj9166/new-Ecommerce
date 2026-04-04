@@ -28,6 +28,8 @@ export const placeOrder = async (req, res) => {
       price: item.productId.discountedPrice,
       quantity: Number(item.quantity),
       image: item.productId.images[0]?.url,
+
+       size: item.size || "N/A", // 🔥 SIZE ADD (IMPORTANT)
     }));
 
     const subtotal = orderItems.reduce(

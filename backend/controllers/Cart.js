@@ -3,15 +3,16 @@ import Cart from "../models/Cart.js";
 /* ================= ADD / UPDATE CART ================= */
 export async function addToCart(req, res) {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, size } = req.body; // 🔥 size add
 
-    if (!productId || !quantity) {
-      return res.status(400).json({ message: "ProductId and quantity required" });
+    if (!productId || !quantity || !size) {
+      return res.status(400).json({ message: "ProductId, quantity and size required" });
     }
 
-    const userId = req.user.id; // ✅ FIXED
+    const userId = req.user.id;
 
-    const existingCartItem = await Cart.findOne({ userId, productId });
+    // 🔥 size bhi check me add karo
+    const existingCartItem = await Cart.findOne({ userId, productId, size });
 
     if (existingCartItem) {
       const newQuantity =
@@ -22,7 +23,7 @@ export async function addToCart(req, res) {
         return res.status(200).json({ message: "Product removed from cart" });
       }
 
-      existingCartItem.quantity = String(newQuantity);
+      existingCartItem.quantity = Number(newQuantity); // 🔥 number use karo
       await existingCartItem.save();
 
       return res.status(200).json({
@@ -35,10 +36,12 @@ export async function addToCart(req, res) {
       return res.status(400).json({ message: "Invalid quantity" });
     }
 
+    // 🔥 NEW ITEM (WITH SIZE)
     const productInCart = new Cart({
       userId,
       productId,
-      quantity: String(quantity),
+      quantity: Number(quantity), // 🔥 number
+      size, // 🔥 IMPORTANT
     });
 
     await productInCart.save();
@@ -58,7 +61,7 @@ export async function addToCart(req, res) {
 export async function fetchCart(req, res) {
   try {
     const cartItems = await Cart.find({
-      userId: req.user.id, // ✅ FIXED
+      userId: req.user.id,
     }).populate("productId");
 
     res.status(200).json(cartItems);

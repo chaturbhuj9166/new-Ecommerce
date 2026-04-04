@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import axios from "axios";
+import instance from "../../axiosConfig";
 
 const ProtectedRouters = () => {
   const [loading, setLoading] = useState(true);
@@ -12,12 +12,8 @@ const ProtectedRouters = () => {
 
   const checkForLogin = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BASEURL}/check/login?referer=admin`,
-        { withCredentials: true }
-      );
+      const res = await instance.get("/check/login?referer=admin");
 
-      // ✅ backend se success aaya
       if (res.status === 200) {
         setIsAllowed(true);
       } else {

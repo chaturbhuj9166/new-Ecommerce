@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import instance from "../../axiosConfig";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ function AdminOrders() {
         { withCredentials: true }
       );
       setOrders(res.data.orders);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load orders");
     } finally {
       setLoading(false);

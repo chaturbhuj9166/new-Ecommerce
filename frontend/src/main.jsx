@@ -7,12 +7,28 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 createRoot(document.getElementById("root")).render(
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+  googleClientId ? (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <>
+        <App />
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+        />
+      </>
+    </GoogleOAuthProvider>
+  ) : (
     <>
       <App />
-
-      {/* 🔔 Toast Container (global) */}
       <ToastContainer
         position="top-right"
         autoClose={2000}
@@ -24,5 +40,5 @@ createRoot(document.getElementById("root")).render(
         theme="light"
       />
     </>
-  </GoogleOAuthProvider>
+  )
 );

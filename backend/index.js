@@ -21,20 +21,26 @@ import orderRouter from "./routes/orderRouter.js";
 const app = express();
 dotenv.config();
 
-
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  "https://new-ecommerce-oi4884837-chaturbhuj-joshis-projects.vercel.app",
-  "http://localhost:5173",
-  "https://new-ecommerce-jet-five.vercel.app"
-];
+  process.env.FRONTEND_URL_1,
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 
 // Allow postMessage from Google popups — relax COOP to allow popups
@@ -69,6 +75,8 @@ app.use("/api/orders", orderRouter);
 
 
 /* ================= SERVER ================= */
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

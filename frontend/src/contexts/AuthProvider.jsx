@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import instance from "../axiosConfig";
 
@@ -9,13 +8,10 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ 🔥 ADD THIS FUNCTION (MAIN FIX)
-  const checkIsLoggedIn = async (role = "user") => {
+  // 🔥 check login (reload pe)
+  const checkIsLoggedIn = async () => {
     try {
-      const res = await instance.get(
-        `/check/login?referer=${role}`,
-        { withCredentials: true }
-      );
+      const res = await instance.get("/check/login?referer=user");
 
       if (res.data.loggedIn) {
         setIsLoggedIn(true);
@@ -24,60 +20,31 @@ function AuthProvider({ children }) {
         setIsLoggedIn(false);
         setUser(null);
       }
-    } catch (error) {
+    } catch {
       setIsLoggedIn(false);
       setUser(null);
     }
   };
 
-  // ✅ Check login on page load
   useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const res = await instance.get(
-          "/check/login?referer=user", // 🔥 FIX
-          { withCredentials: true }
-        );
-
-        if (res.data.loggedIn) {
-          setIsLoggedIn(true);
-          setUser(res.data);
-        } else {
-          setIsLoggedIn(false);
-          setUser(null);
-        }
-      } catch (error) {
-        setIsLoggedIn(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    const init = async () => {
+      await checkIsLoggedIn();
+      setLoading(false);
     };
-
-    checkLogin();
+    init();
   }, []);
 
-  // ✅ Login state update
+  // 🔥 MAIN FIX
   const loginUser = (userData) => {
     setIsLoggedIn(true);
     setUser(userData);
   };
 
-  // ✅ Logout
   const handleLogout = async (navigate) => {
-    try {
-      await instance.post(
-        "/user/logout",
-        {},
-        { withCredentials: true }
-      );
-
-      setIsLoggedIn(false);
-      setUser(null);
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    await instance.post("/user/logout");
+    setIsLoggedIn(false);
+    setUser(null);
+    navigate("/login");
   };
 
   return (
@@ -86,9 +53,9 @@ function AuthProvider({ children }) {
         isLoggedIn,
         user,
         loading,
+        checkIsLoggedIn,
         loginUser,
         handleLogout,
-        checkIsLoggedIn, // 🔥 ADD THIS
       }}
     >
       {!loading && children}
@@ -97,5 +64,4 @@ function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
-
 export default AuthProvider;

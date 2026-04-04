@@ -15,6 +15,8 @@ const cartSchema = new Schema(
     // name: {type:String,required:true},
     
     quantity: { type: String, require: true },
+
+    size: { type: String, required: true },
   },
   {
     timestamps: true,

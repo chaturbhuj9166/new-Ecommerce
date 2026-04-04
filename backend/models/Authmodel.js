@@ -38,6 +38,11 @@ const authSchema = new Schema(
       default: "user",
     },
 
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
     authProvider: {
       type: String,
       enum: ["local", "google"],

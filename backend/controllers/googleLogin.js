@@ -28,19 +28,23 @@ export const googleLogin = async (req, res) => {
     let user = await Auth.findOne({ email });
 
     if (!user) {
-      // REGISTER
       user = await Auth.create({
         name,
         email,
         googleId: sub,
         image: picture,
         authProvider: "google",
+        role: "user",
+        isBlocked: false,
       });
     }
 
-    // LOGIN
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "User is blocked" });
+    }
+
     const authToken = jwt.sign(
-      { id: user._id },
+      { id: user._id, role: user.role || "user" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );

@@ -1,12 +1,10 @@
 import Product from "../models/productmodel.js";
 import uploadToCloudinary from "../middlewares/cloudinary.js";
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
 
-/* ===== ADD PRODUCT ===== */
+/* ===== ADD PRODUCT (🔥 YAHI MAIN FIX HAI) ===== */
 export async function addProduct(req, res) {
   try {
-    console.log("FILES COUNT:", req.files?.length);
-
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "At least one image required" });
     }
@@ -18,9 +16,19 @@ export async function addProduct(req, res) {
       images.push(img);
     }
 
+    // 🔥 SAFE DATA HANDLE
     const product = new Product({
-      ...req.body,   // name, price, category etc
-      images,        // cloudinary images
+      name: req.body.name,
+      slug: req.body.slug,
+      category: req.body.category,
+      description: req.body.description,
+      originalPrice: req.body.originalPrice,
+      discountedPrice: req.body.discountedPrice,
+
+      // 🔥 SIZE FIX (IMPORTANT)
+      sizes: req.body.sizes || [],
+
+      images,
     });
 
     await product.save();
@@ -37,7 +45,6 @@ export async function getProduct(req, res) {
   res.json(products);
 }
 
-
 /* ===== GET BY ID ===== */
 export async function getProductById(req, res) {
   const product = await Product.findById(req.params.id);
@@ -47,33 +54,47 @@ export async function getProductById(req, res) {
 
 /* ===== UPDATE ===== */
 export async function updateProduct(req, res) {
-  const updatedData = { ...req.body };
+  try {
+    const updatedData = {
+      name: req.body.name,
+      slug: req.body.slug,
+      category: req.body.category,
+      description: req.body.description,
+      originalPrice: req.body.originalPrice,
+      discountedPrice: req.body.discountedPrice,
 
-  if (req.files && req.files.length > 0) {
-    const images = [];
+      // 🔥 UPDATE ME BHI SIZE ADD
+      sizes: req.body.sizes || [],
+    };
 
-    for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(
-        `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
-        { folder: "products" }
-      );
+    if (req.files && req.files.length > 0) {
+      const images = [];
 
-      images.push({
-        url: result.secure_url,
-        public_id: result.public_id,
-      });
+      for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(
+          `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+          { folder: "products" }
+        );
+
+        images.push({
+          url: result.secure_url,
+          public_id: result.public_id,
+        });
+      }
+
+      updatedData.images = images;
     }
 
-    updatedData.images = images;
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true }
+    );
+
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-
-  const product = await Product.findByIdAndUpdate(
-    req.params.id,
-    updatedData,
-    { new: true }
-  );
-
-  res.json(product);
 }
 
 /* ===== DELETE ===== */
@@ -84,7 +105,6 @@ export async function deleteProduct(req, res) {
     return res.status(404).json({ message: "Not found" });
   }
 
-  // 🔥 Cloudinary cleanup
   for (const img of product.images) {
     await cloudinary.uploader.destroy(img.public_id);
   }

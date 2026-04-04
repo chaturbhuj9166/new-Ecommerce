@@ -27,7 +27,7 @@ const Checkout = () => {
     try {
       const res = await instance.get("/cart", { withCredentials: true });
       setCartItems(res.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load cart");
     }
   };
