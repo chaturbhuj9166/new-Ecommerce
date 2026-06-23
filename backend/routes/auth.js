@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUsers,
   logoutUsers,
+  getMe,
   getUsers,
   updateUsers,
   deleteUsers,
@@ -11,6 +12,7 @@ import {
 import {
   googleLogin,
 } from "../controllers/googleLogin.js";
+import { checkAuth } from "../middlewares/MiddlewaresAuth.js";
 
 const router = express.Router();
 
@@ -21,6 +23,7 @@ router.post("/logout", logoutUsers);
 router.post("/google-login", googleLogin);
 
 // USERS
+router.get("/me", checkAuth, getMe);
 router.get("/users", getUsers);
 router.put("/update/:id", updateUsers);
 router.delete("/delete/:id", deleteUsers);

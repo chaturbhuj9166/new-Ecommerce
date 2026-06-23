@@ -127,6 +127,19 @@ export async function logoutUsers(req, res) {
   });
   return res.status(200).json({ message: "Logout successful" });
 }
+// ================= GET ME (logged-in user) =================
+export async function getMe(req, res) {
+  try {
+    const user = await Auth.findById(req.user.id).select("name email phone");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
 // ================= GET USERS =================
 export async function getUsers(req, res) {
   try {

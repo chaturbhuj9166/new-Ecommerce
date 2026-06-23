@@ -21,6 +21,7 @@ const Checkout = () => {
 
   useEffect(() => {
     fetchCart();
+    prefillUserDetails();
   }, []);
 
   const fetchCart = async () => {
@@ -29,6 +30,40 @@ const Checkout = () => {
       setCartItems(res.data);
     } catch {
       toast.error("Failed to load cart");
+    }
+  };
+
+  // 🔥 logged-in user ki details auto-fill karo
+  const prefillUserDetails = async () => {
+    try {
+      // user profile se name + phone
+      const profileRes = await instance.get("/user/me", {
+        withCredentials: true,
+      });
+      const profile = profileRes.data || {};
+
+      // last order se address/city/pincode (agar pehle order kiya ho)
+      let last = {};
+      try {
+        const ordersRes = await instance.get("/api/orders/my", {
+          withCredentials: true,
+        });
+        last = ordersRes.data?.orders?.[0]?.shippingAddress || {};
+      } catch {
+        // koi purana order nahi — sirf profile se bharenge
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        name: last.name || profile.name || prev.name,
+        phone: last.phone || profile.phone || prev.phone,
+        secondaryPhone: last.secondaryPhone || prev.secondaryPhone,
+        address: last.address || prev.address,
+        city: last.city || prev.city,
+        pincode: last.pincode || prev.pincode,
+      }));
+    } catch {
+      // not logged in / fetch fail — form khali rehne do
     }
   };
 

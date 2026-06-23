@@ -9,13 +9,43 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthProvider";
 import { useCart } from "../contexts/CartProvider";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { animate, stagger } from "animejs";
 
 function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, handleLogout, loading } = useAuth();
   const { cartItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // 🔥 Logo bounce + rotate animation (anime.js)
+  const logoText = "Stepzy";
+  const logoCharsRef = useRef([]);
+
+  useEffect(() => {
+    const chars = logoCharsRef.current.filter(Boolean);
+    if (!chars.length) return;
+
+    const animation = animate(chars, {
+      y: [
+        { to: "-2.75rem", ease: "outExpo", duration: 600 },
+        { to: 0, ease: "outBounce", duration: 800, delay: 100 },
+      ],
+      rotate: { from: "-1turn", delay: 0 },
+      delay: stagger(50),
+      ease: "inOutCirc",
+      loopDelay: 1000,
+      loop: true,
+    });
+
+    return () => {
+      try {
+        animation.revert();
+      } catch {
+        animation.pause?.();
+      }
+    };
+  }, []);
 
   const logoutUser = async () => {
     await handleLogout(navigate);
@@ -27,12 +57,31 @@ function Header() {
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
 
         {/* LOGO */}
-        <Link
-          to="/"
-          className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent"
-        >
-          🛍️ E-Store
-        </Link>
+      <Link
+  to="/"
+  className="flex items-center gap-3"
+>
+  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-indigo-500/40 flex items-center justify-center transform rotate-[-10deg] hover:rotate-0 transition duration-300">
+    <span className="text-2xl drop-shadow-lg">👟</span>
+  </div>
+
+  <span
+    className="text-3xl font-extrabold inline-flex tracking-wide"
+    aria-label={logoText}
+  >
+    {logoText.split("").map((ch, i) => (
+      <span
+        key={i}
+        ref={(el) => (logoCharsRef.current[i] = el)}
+        aria-hidden="true"
+        style={{ willChange: "transform" }}
+        className="inline-block bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent"
+      >
+        {ch}
+      </span>
+    ))}
+  </span>
+</Link>
 
         {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700">
