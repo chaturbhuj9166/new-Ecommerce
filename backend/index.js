@@ -21,14 +21,31 @@ import orderRouter from "./routes/orderRouter.js";
 const app = express();
 dotenv.config();
 
+// trailing slash hata ke normalize karte hain (browser origin me slash nahi hota)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  "https://new-ecommerce-dun.vercel.app/",
-].filter(Boolean);
+  "https://new-ecommerce-dun.vercel.app",
+  "http://localhost:5173",
+]
+  .filter(Boolean)
+  .map((o) => o.replace(/\/$/, ""));
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // server-to-server / curl (no origin) allow
+    if (!origin) return callback(null, true);
+
+    const clean = origin.replace(/\/$/, "");
+
+    // allowed list me ho YA koi bhi *.vercel.app (preview deploys ke liye)
+    let isVercel = false;
+    try {
+      isVercel = new URL(origin).hostname.endsWith(".vercel.app");
+    } catch {
+      isVercel = false;
+    }
+
+    if (allowedOrigins.includes(clean) || isVercel) {
       callback(null, true);
     } else {
       callback(null, false);
@@ -75,8 +92,14 @@ app.use("/api/orders", orderRouter);
 
 
 /* ================= SERVER ================= */
-const PORT = process.env.PORT || 5000;
+// Vercel (serverless) pe app.listen nahi chalता — wahan default export use hota hai.
+// Local development me hi server listen karega.
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// 🔥 Vercel serverless function handler
+export default app;
